@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+        <variable
+            name="itemViewModel"
+            type="com.example.lqy.mvvm.ItemViewModel" />
+    </data>
+
+    <RelativeLayout
+        android:onClick="@{() -> itemViewModel.onClick()}"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:text="@{itemViewModel.name}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="31dp"
+            android:layout_marginStart="31dp"
+            android:id="@+id/userName"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:text="@{itemViewModel.pwd}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/userName"
+            android:layout_marginLeft="20dp"
+            android:id="@+id/pwd" />
+    </RelativeLayout>
+
+
+</layout>
