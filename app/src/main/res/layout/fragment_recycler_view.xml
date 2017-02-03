@@ -6,7 +6,7 @@
         <import type="me.tatarka.bindingcollectionadapter.LayoutManagers" />
         <variable
             name="viewModel"
-            type="com.example.lqy.mvvm.ACollectionViewModel" />
+            type="com.example.lqy.mvvm.base.viewModel.ACollectionViewModel" />
     </data>
     <RelativeLayout
         android:background="@android:color/holo_green_light"

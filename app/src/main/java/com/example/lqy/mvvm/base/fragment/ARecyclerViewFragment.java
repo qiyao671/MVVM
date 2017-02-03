@@ -1,4 +1,4 @@
-package com.example.lqy.mvvm;
+package com.example.lqy.mvvm.base.fragment;
 
 import android.app.Fragment;
 import android.os.Bundle;
@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.lqy.mvvm.base.viewModel.ACollectionViewModel;
 import com.example.lqy.mvvm.databinding.FragmentRecyclerViewBinding;
 
 /**

@@ -1,8 +1,11 @@
-package com.example.lqy.mvvm;
+package com.example.lqy.mvvm.list;
 
 import android.content.Context;
 import android.databinding.ObservableField;
 import android.widget.Toast;
+
+import com.example.lqy.mvvm.base.viewModel.IItemViewModel;
+import com.example.lqy.mvvm.User;
 
 /**
  * Created by lvqiyao (amorfatilay@163.com).
@@ -10,7 +13,7 @@ import android.widget.Toast;
  * 类描述：
  */
 
-public class ItemViewModel{
+public class ItemViewModel implements IItemViewModel {
     private Context context;
 
     private User user;

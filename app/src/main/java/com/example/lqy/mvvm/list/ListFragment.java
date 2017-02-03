@@ -1,4 +1,7 @@
-package com.example.lqy.mvvm;
+package com.example.lqy.mvvm.list;
+
+import com.example.lqy.mvvm.base.viewModel.ACollectionViewModel;
+import com.example.lqy.mvvm.base.fragment.ARecyclerViewFragment;
 
 /**
  * Created by lvqiyao (amorfatilay@163.com).

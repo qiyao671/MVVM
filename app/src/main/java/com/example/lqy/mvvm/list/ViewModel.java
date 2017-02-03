@@ -1,6 +1,11 @@
-package com.example.lqy.mvvm;
+package com.example.lqy.mvvm.list;
 
 import android.app.Fragment;
+
+import com.example.lqy.mvvm.BR;
+import com.example.lqy.mvvm.base.viewModel.ACollectionViewModel;
+import com.example.lqy.mvvm.R;
+import com.example.lqy.mvvm.User;
 
 import me.tatarka.bindingcollectionadapter.ItemView;
 import me.tatarka.bindingcollectionadapter.ItemViewArg;
@@ -28,16 +33,11 @@ public class ViewModel extends ACollectionViewModel {
 
 
     public ViewModel(Fragment fragment) {
+        super(new ViewBindingRes(BR.itemViewModel, R.layout.item_list), null, null);
         this.fragment = fragment;
         itemViewModels.add(new ItemViewModel(fragment.getActivity(), new User("name1", "pwd1")));
         itemViewModels.add(new ItemViewModel(fragment.getActivity(), new User("name2", "pwd2")));
         itemViewModels.add(new ItemViewModel(fragment.getActivity(), new User("name3", "pwd3")));
         itemViewModels.add(new ItemViewModel(fragment.getActivity(), new User("name4", "pwd4")));
-    }
-
-    @Override
-    public ItemViewArg createItemView() {
-        ItemView itemView = ItemView.of(BR.itemViewModel, R.layout.item_list);
-        return ItemViewArg.of(itemView);
     }
 }
