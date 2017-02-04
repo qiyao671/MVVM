@@ -12,12 +12,10 @@ import com.example.lqy.mvvm.list.ItemViewModel;
 import com.example.lqy.mvvm.list.ViewBindingRes;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 
-import me.tatarka.bindingcollectionadapter.ItemView;
 
 /**
  * Created by qiyao on 2017/2/3.
@@ -31,16 +29,14 @@ class SectionViewModel extends ASectionCollectionViewModel<String, User> {
     private HashMap<String, ArrayList<User>> sectionedUsers;
 
     //presenters for view
-    SectionViewModel(Fragment fragment, ArrayList<User> users) {
-        super(fragment.getActivity(), users, new ViewBindingRes(R.layout.section_header_sectioned_list, BR.sectionHeader), new ViewBindingRes(R.layout.item_list, BR.itemViewModel), new ViewBindingRes(R.layout.item_header, ItemView.BINDING_VARIABLE_NONE), null);
+    SectionViewModel(Fragment fragment) {
+        super(fragment.getActivity(), new ViewBindingRes(R.layout.section_header_sectioned_list, BR.sectionHeader));
         this.fragment = fragment;
-
-//        initDataSource(users);
     }
 
     @Override
-    protected boolean isHeader(int position) {
-        return itemViewModels.get(position) instanceof SectionHeaderViewModel;
+    protected boolean isSectionHeader(int position, IItemViewModel itemViewModel) {
+        return itemViewModel instanceof SectionHeaderViewModel;
     }
 
     @Override
@@ -77,9 +73,8 @@ class SectionViewModel extends ASectionCollectionViewModel<String, User> {
     }
 
     @Override
-    protected void initDataSource(Collection<User> items) {
-        sectionedUsers = groupItems(items);
-
+    protected void setupDataSource(ArrayList<User> users) {
+        sectionedUsers = groupItems(users);
         //排序
         ArrayList<String> headerList = new ArrayList<>(sectionedUsers.keySet());
         sort(headerList);
@@ -104,4 +99,19 @@ class SectionViewModel extends ASectionCollectionViewModel<String, User> {
         });
     }
 
+    @Override
+    public ViewBindingRes getItemRes() {
+        return new ViewBindingRes(R.layout.item_list, BR.itemViewModel);
+    }
+
+    @Override
+    protected ArrayList<User> obtainDataSource() {
+        ArrayList<User> users = new ArrayList<>();
+        users.add(new User("a123", "112"));
+        users.add(new User("a333", "112"));
+        users.add(new User("c233", "112"));
+        users.add(new User("b123", "112"));
+        users.add(new User("b1223", "112"));
+        return users;
+    }
 }

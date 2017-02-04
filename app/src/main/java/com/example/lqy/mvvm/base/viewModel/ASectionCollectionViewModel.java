@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
+import me.tatarka.bindingcollectionadapter.BindingRecyclerViewAdapters;
+
 import me.tatarka.bindingcollectionadapter.ItemView;
 import me.tatarka.bindingcollectionadapter.ItemViewArg;
 import me.tatarka.bindingcollectionadapter.ItemViewSelector;
@@ -16,45 +18,27 @@ import me.tatarka.bindingcollectionadapter.ItemViewSelector;
  * Created by qiyao on 2017/2/3.
  */
 
-public abstract class ASectionCollectionViewModel<H, T> extends ACollectionViewModel {
+public abstract class ASectionCollectionViewModel<H, T> extends ACollectionViewModel<T> {
     private Context context;
     private ViewBindingRes sectionHeaderRes;
 
-    public ASectionCollectionViewModel(Context context, Collection<T> items, ViewBindingRes sectionHeaderRes, ViewBindingRes itemRes, ViewBindingRes headerRes, ViewBindingRes footerRes) {
-        super(itemRes, headerRes, footerRes);
+    public ASectionCollectionViewModel(Context context,  ViewBindingRes sectionHeaderRes) {
+        super();
         this.sectionHeaderRes = sectionHeaderRes;
         this.context = context;
-
-        initDataSource(items);
-        initItemViewModels();
     }
 
-    public ASectionCollectionViewModel(Context context, ViewBindingRes sectionHeaderRes, ViewBindingRes itemRes, ViewBindingRes headerRes, ViewBindingRes footerRes) {
-        super(itemRes, headerRes, footerRes);
-        this.sectionHeaderRes = sectionHeaderRes;
-        this.context = context;
-
-        initItemViewModels();
-    }
-
-    public ASectionCollectionViewModel(Context context, ViewBindingRes sectionHeaderRes, ViewBindingRes itemRes) {
-        this(context, sectionHeaderRes, itemRes, null, null);
-    }
-
-    public ASectionCollectionViewModel(Context context, Collection<T> items, ViewBindingRes sectionHeaderRes, ViewBindingRes itemRes) {
-        this(context, items, sectionHeaderRes, itemRes, null, null);
-    }
-
-    protected abstract boolean isHeader(int position);
+    protected abstract boolean isSectionHeader(int position, IItemViewModel itemViewModel);
 
     @Override
     protected ItemViewArg createItemView() {
-        return ItemViewArg.of(new ItemViewSelector() {
+        return ItemViewArg.of(new ItemViewSelector<IItemViewModel>() {
+
             @Override
-            public void select(ItemView itemView, int position, Object item) {
+            public void select(ItemView itemView, int position, IItemViewModel item) {
                 ViewBindingRes bindingRes;
-                //如果非头部和尾部
-                if ((position != 0 || getHeaderRes() == null) && position != itemViewModels.size() - 1 && isHeader(position)) {
+                //item为section的header
+                if (isSectionHeader(position, item)) {
                     bindingRes = sectionHeaderRes;
                 } else {
                     bindingRes = getBindingRes(position, item);
@@ -87,8 +71,8 @@ public abstract class ASectionCollectionViewModel<H, T> extends ACollectionViewM
     //获得某section中header的ViewModel
     protected abstract IItemViewModel headerViewModelOfSection(int section);
 
-    //初始化数据源
-    protected abstract void initDataSource(Collection<T> items);
+    //设置数据源
+    protected abstract void setupDataSource(ArrayList<T> items);
 
     //对items进行分组
     protected HashMap<H, ArrayList<T>> groupItems(Collection<T> items) {
@@ -106,17 +90,17 @@ public abstract class ASectionCollectionViewModel<H, T> extends ACollectionViewM
         return sectionedItems;
     }
 
-    //初始化itemViewModels
-    private void initItemViewModels() {
-        if (getHeaderRes() != null) {
-            itemViewModels.add(new IItemViewModel() {});
-        }
+    @Override
+    protected ArrayList<IItemViewModel> generateItemViewModelList(ArrayList<T> items) {
+        setupDataSource(items);
+        ArrayList<IItemViewModel> itemViewModels = new ArrayList<>();
         for (int section = 0; section < numberOfSections(); section++) {
             itemViewModels.add(headerViewModelOfSection(section));
             for (int index = 0; index < numberOfItemsInSection(section); index++) {
                 itemViewModels.add(itemViewModelAtIndexInSection(index, section));
             }
         }
+        return itemViewModels;
     }
 
     protected Context getContext() {

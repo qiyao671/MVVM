@@ -6,6 +6,9 @@ import com.example.lqy.mvvm.BR;
 import com.example.lqy.mvvm.base.viewModel.ACollectionViewModel;
 import com.example.lqy.mvvm.R;
 import com.example.lqy.mvvm.User;
+import com.example.lqy.mvvm.base.viewModel.IItemViewModel;
+
+import java.util.ArrayList;
 
 import me.tatarka.bindingcollectionadapter.ItemView;
 import me.tatarka.bindingcollectionadapter.ItemViewArg;
@@ -16,7 +19,7 @@ import me.tatarka.bindingcollectionadapter.ItemViewArg;
  * 类描述：
  */
 
-public class ViewModel extends ACollectionViewModel {
+public class ViewModel extends ACollectionViewModel<User> {
     //context
     private Fragment fragment;
 
@@ -33,11 +36,36 @@ public class ViewModel extends ACollectionViewModel {
 
 
     public ViewModel(Fragment fragment) {
-        super(new ViewBindingRes(BR.itemViewModel, R.layout.item_list), null, null);
+        super();
         this.fragment = fragment;
-        itemViewModels.add(new ItemViewModel(fragment.getActivity(), new User("name1", "pwd1")));
-        itemViewModels.add(new ItemViewModel(fragment.getActivity(), new User("name2", "pwd2")));
-        itemViewModels.add(new ItemViewModel(fragment.getActivity(), new User("name3", "pwd3")));
-        itemViewModels.add(new ItemViewModel(fragment.getActivity(), new User("name4", "pwd4")));
+
+    }
+
+    @Override
+    public ViewBindingRes getItemRes() {
+        return null;
+    }
+
+    @Override
+    protected ArrayList<IItemViewModel> generateItemViewModelList(ArrayList<User> items) {
+        ArrayList<IItemViewModel> list = new ArrayList<>();
+        for (User item : items) {
+            list.add(new ItemViewModel(fragment.getActivity(), item));
+        }
+        return list;
+    }
+
+    @Override
+    protected ArrayList<User> obtainDataSource() {
+        ArrayList<User> list = new ArrayList<>();
+//        list.add(new ItemViewModel(fragment.getActivity(), new User("name1", "pwd1")));
+//        list.add(new ItemViewModel(fragment.getActivity(), new User("name2", "pwd2")));
+//        list.add(new ItemViewModel(fragment.getActivity(), new User("name3", "pwd3")));
+//        list.add(new ItemViewModel(fragment.getActivity(), new User("name4", "pwd4")));
+        list.add(new User("name1", "pwd1"));
+        list.add(new User("name2", "pwd2"));
+        list.add(new User("name3", "pwd3"));
+        list.add(new User("name4", "pwd4"));
+        return list;
     }
 }

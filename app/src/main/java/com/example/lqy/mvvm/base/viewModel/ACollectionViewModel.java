@@ -2,7 +2,10 @@ package com.example.lqy.mvvm.base.viewModel;
 
 import android.databinding.ObservableArrayList;
 
+import com.example.lqy.mvvm.base.IItemViewBindingCreator;
 import com.example.lqy.mvvm.list.ViewBindingRes;
+
+import java.util.ArrayList;
 
 import me.tatarka.bindingcollectionadapter.ItemView;
 import me.tatarka.bindingcollectionadapter.ItemViewArg;
@@ -14,15 +17,14 @@ import me.tatarka.bindingcollectionadapter.ItemViewSelector;
  * 类描述：
  */
 
-public abstract class ACollectionViewModel implements IViewModel {
-    private ViewBindingRes itemRes;
-    private ViewBindingRes headerRes;
-    private ViewBindingRes footerRes;
+public abstract class ACollectionViewModel<T> implements IViewModel {
+    private IItemViewBindingCreator headerViewBindingCreator;
+    private IItemViewBindingCreator footerViewBindingCreator;
 
-    public ACollectionViewModel(ViewBindingRes itemRes, ViewBindingRes headerRes, ViewBindingRes footerRes) {
-        this.itemRes = itemRes;
-        this.headerRes = headerRes;
-        this.footerRes = footerRes;
+    public ACollectionViewModel() {
+        initItemViewModelList();
+        headerViewBindingCreator = createHeaderViewBindingHelper();
+        footerViewBindingCreator = createFooterViewBindingHelper();
     }
 
     //data for presenter
@@ -34,9 +36,9 @@ public abstract class ACollectionViewModel implements IViewModel {
 
 
     protected ItemViewArg createItemView(){
-        return ItemViewArg.of(new ItemViewSelector() {
+        return ItemViewArg.of(new ItemViewSelector<IItemViewModel>() {
             @Override
-            public void select(ItemView itemView, int position, Object item) {
+            public void select(ItemView itemView, int position, IItemViewModel item) {
                 ViewBindingRes bindingRes = getBindingRes(position, item);
                 itemView.set(bindingRes.getBindingVariableRes(), bindingRes.getLayoutRes());
             }
@@ -48,25 +50,56 @@ public abstract class ACollectionViewModel implements IViewModel {
         });
     }
 
-    protected ViewBindingRes getBindingRes(int position, Object item) {
-        if (position == 0 && headerRes != null) {
-            return headerRes;
-        } else if (position == itemViewModels.size() - 1 && footerRes != null) {
-            return footerRes;
-        } else {
-            return itemRes;
-        }
-    }
-
-    public ViewBindingRes getItemRes() {
-        return itemRes;
-    }
 
     public ViewBindingRes getHeaderRes() {
-        return headerRes;
+        return headerViewBindingCreator == null ? null : headerViewBindingCreator.genViewBindingRes();
     }
 
     public ViewBindingRes getFooterRes() {
-        return footerRes;
+        return footerViewBindingCreator == null ? null :footerViewBindingCreator.genViewBindingRes();
     }
+
+    protected ViewBindingRes getBindingRes(int position, IItemViewModel item) {
+        if (position == 0 && headerViewBindingCreator != null) {
+            return getHeaderRes();
+        } else if (position == itemViewModels.size() - 1 && footerViewBindingCreator != null) {
+            return getFooterRes();
+        } else {
+            return getItemRes();
+        }
+    }
+
+    private void addListToItemViewModels(ArrayList<IItemViewModel> itemViewModelArrayList) {
+        itemViewModels.addAll(getHeaderRes() == null ? 0 : 1, itemViewModelArrayList);
+    }
+
+    private void initItemViewModelList() {
+        //添加header view model
+        if (headerViewBindingCreator != null) {
+            itemViewModels.add(headerViewBindingCreator.genItemViewModel());
+        }
+
+        ArrayList<T> items = obtainDataSource();
+        ArrayList<IItemViewModel> itemViewModelArrayList = generateItemViewModelList(items);
+        addListToItemViewModels(itemViewModelArrayList);
+
+        //添加footer view model
+        if (footerViewBindingCreator != null) {
+            itemViewModels.add(footerViewBindingCreator.genItemViewModel());
+        }
+    }
+
+    protected IItemViewBindingCreator createHeaderViewBindingHelper() {
+        return null;
+    }
+
+    protected IItemViewBindingCreator createFooterViewBindingHelper() {
+        return null;
+    }
+
+    protected abstract ArrayList<IItemViewModel> generateItemViewModelList(ArrayList<T> items);
+
+    protected abstract ArrayList<T> obtainDataSource();
+
+    protected abstract ViewBindingRes getItemRes();
 }

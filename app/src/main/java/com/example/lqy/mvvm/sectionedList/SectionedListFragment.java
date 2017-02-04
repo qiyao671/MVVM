@@ -14,11 +14,6 @@ public class SectionedListFragment extends ARecyclerViewFragment {
     @Override
     protected ACollectionViewModel createViewModel() {
         ArrayList<User> users = new ArrayList<>();
-        users.add(new User("a123", "112"));
-        users.add(new User("a333", "112"));
-        users.add(new User("c233", "112"));
-        users.add(new User("b123", "112"));
-        users.add(new User("b1223", "112"));
-        return new SectionViewModel(this, users);
+        return new SectionViewModel(this);
     }
 }
