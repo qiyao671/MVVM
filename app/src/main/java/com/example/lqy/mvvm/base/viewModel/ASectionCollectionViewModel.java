@@ -8,50 +8,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
-import me.tatarka.bindingcollectionadapter.BindingRecyclerViewAdapters;
-
-import me.tatarka.bindingcollectionadapter.ItemView;
-import me.tatarka.bindingcollectionadapter.ItemViewArg;
-import me.tatarka.bindingcollectionadapter.ItemViewSelector;
+import me.tatarka.bindingcollectionadapter.ItemBinding;
 
 /**
  * Created by qiyao on 2017/2/3.
  */
 
 public abstract class ASectionCollectionViewModel<H, T> extends ACollectionViewModel<T> {
-    private Context context;
     private ViewBindingRes sectionHeaderRes;
 
     public ASectionCollectionViewModel(Context context,  ViewBindingRes sectionHeaderRes) {
-        super();
+        super(context);
         this.sectionHeaderRes = sectionHeaderRes;
-        this.context = context;
     }
 
     protected abstract boolean isSectionHeader(int position, IItemViewModel itemViewModel);
-
-    @Override
-    protected ItemViewArg createItemView() {
-        return ItemViewArg.of(new ItemViewSelector<IItemViewModel>() {
-
-            @Override
-            public void select(ItemView itemView, int position, IItemViewModel item) {
-                ViewBindingRes bindingRes;
-                //item为section的header
-                if (isSectionHeader(position, item)) {
-                    bindingRes = sectionHeaderRes;
-                } else {
-                    bindingRes = getBindingRes(position, item);
-                }
-                itemView.set(bindingRes.getBindingVariableRes(), bindingRes.getLayoutRes());
-            }
-
-            @Override
-            public int viewTypeCount() {
-                return 2;
-            }
-        });
-    }
 
     // FIXME: 2017/2/3 是否需要这个函数
     protected abstract H headerOfSection(int section);
@@ -73,6 +44,9 @@ public abstract class ASectionCollectionViewModel<H, T> extends ACollectionViewM
 
     //设置数据源
     protected abstract void setupDataSource(ArrayList<T> items);
+
+    //设置item的layout和对应的binding variable
+    protected abstract ViewBindingRes getSectionItemRes(int position, IItemViewModel item);
 
     //对items进行分组
     protected HashMap<H, ArrayList<T>> groupItems(Collection<T> items) {
@@ -103,7 +77,12 @@ public abstract class ASectionCollectionViewModel<H, T> extends ACollectionViewM
         return itemViewModels;
     }
 
-    protected Context getContext() {
-        return context;
+    @Override
+    protected ViewBindingRes getItemRes(int position, IItemViewModel item) {
+        if (isSectionHeader(position, item)) {
+            return sectionHeaderRes;
+        } else {
+            return getItemRes(position, item);
+        }
     }
 }

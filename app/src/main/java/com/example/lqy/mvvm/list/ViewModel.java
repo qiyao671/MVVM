@@ -2,16 +2,11 @@ package com.example.lqy.mvvm.list;
 
 import android.app.Fragment;
 
-import com.example.lqy.mvvm.BR;
 import com.example.lqy.mvvm.base.viewModel.ACollectionViewModel;
-import com.example.lqy.mvvm.R;
 import com.example.lqy.mvvm.User;
 import com.example.lqy.mvvm.base.viewModel.IItemViewModel;
 
 import java.util.ArrayList;
-
-import me.tatarka.bindingcollectionadapter.ItemView;
-import me.tatarka.bindingcollectionadapter.ItemViewArg;
 
 /**
  * Created by lvqiyao (amorfatilay@163.com).
@@ -26,7 +21,7 @@ public class ViewModel extends ACollectionViewModel<User> {
     //model
 
     //data for presenter
-//    public final ItemView itemView = ItemView.of(BR.itemViewModel, R.layout.item_list);
+//    public final ItemView itemBinding = ItemView.of(BR.itemViewModel, R.layout.item_list);
 
 
     //child viewModel
@@ -36,15 +31,11 @@ public class ViewModel extends ACollectionViewModel<User> {
 
 
     public ViewModel(Fragment fragment) {
-        super();
+        super(fragment.getActivity());
         this.fragment = fragment;
 
     }
 
-    @Override
-    public ViewBindingRes getItemRes() {
-        return null;
-    }
 
     @Override
     protected ArrayList<IItemViewModel> generateItemViewModelList(ArrayList<User> items) {
@@ -56,7 +47,7 @@ public class ViewModel extends ACollectionViewModel<User> {
     }
 
     @Override
-    protected ArrayList<User> obtainDataSource() {
+    protected ArrayList<User> obtainDataSource(RefreshMode refreshMode) {
         ArrayList<User> list = new ArrayList<>();
 //        list.add(new ItemViewModel(fragment.getActivity(), new User("name1", "pwd1")));
 //        list.add(new ItemViewModel(fragment.getActivity(), new User("name2", "pwd2")));
@@ -67,5 +58,10 @@ public class ViewModel extends ACollectionViewModel<User> {
         list.add(new User("name3", "pwd3"));
         list.add(new User("name4", "pwd4"));
         return list;
+    }
+
+    @Override
+    protected ViewBindingRes getItemRes(int position, IItemViewModel item) {
+        return null;
     }
 }

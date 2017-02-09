@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             app:layoutManager="@{LayoutManagers.linear()}"
             app:items="@{viewModel.itemViewModels}"
-            app:itemView="@{viewModel.itemView}"
+            app:itemBinding="@{viewModel.getItemBinding()}"
             />
     </RelativeLayout>
 

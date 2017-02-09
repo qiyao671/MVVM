@@ -8,10 +8,9 @@ import com.example.lqy.mvvm.list.ViewBindingRes;
  * Created by qiyao on 2017/2/4.
  */
 
-public interface IItemViewBindingCreator {
-    @NonNull
-    ViewBindingRes genViewBindingRes();
+public interface IItemViewBindingCreator<T> {
+    @NonNull ViewBindingRes genViewBindingRes();
 
-    @NonNull
-    IItemViewModel genItemViewModel();
+
+    @NonNull IItemViewModel genItemViewModel(T item);
 }

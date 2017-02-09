@@ -36,6 +36,10 @@ public abstract class ARecyclerViewFragment extends Fragment {
         return binding.getRoot();
     }
 
+    public ACollectionViewModel getViewModel() {
+        return viewModel;
+    }
+
     protected abstract ACollectionViewModel createViewModel();
 
 }

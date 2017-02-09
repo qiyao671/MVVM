@@ -1,11 +1,11 @@
 package com.example.lqy.mvvm.sectionedList;
 
 import android.app.Fragment;
-import android.support.v7.view.menu.MenuView;
 
 import com.example.lqy.mvvm.BR;
 import com.example.lqy.mvvm.R;
 import com.example.lqy.mvvm.User;
+import com.example.lqy.mvvm.base.IItemViewBindingCreator;
 import com.example.lqy.mvvm.base.viewModel.ASectionCollectionViewModel;
 import com.example.lqy.mvvm.base.viewModel.IItemViewModel;
 import com.example.lqy.mvvm.list.ItemViewModel;
@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+
+import me.tatarka.bindingcollectionadapter.ItemBinding;
 
 
 /**
@@ -81,6 +83,11 @@ class SectionViewModel extends ASectionCollectionViewModel<String, User> {
         sections = headerList.toArray(new String[headerList.size()]);
     }
 
+    @Override
+    protected ViewBindingRes getSectionItemRes(int position, IItemViewModel item) {
+        return new ViewBindingRes(R.layout.item_list, BR.itemViewModel);
+    }
+
     //按首字母从小到大排序
     private void sort(ArrayList<String> list) {
         Collections.sort(list, new Comparator<String>() {
@@ -100,12 +107,7 @@ class SectionViewModel extends ASectionCollectionViewModel<String, User> {
     }
 
     @Override
-    public ViewBindingRes getItemRes() {
-        return new ViewBindingRes(R.layout.item_list, BR.itemViewModel);
-    }
-
-    @Override
-    protected ArrayList<User> obtainDataSource() {
+    protected ArrayList<User> obtainDataSource(RefreshMode refreshMode) {
         ArrayList<User> users = new ArrayList<>();
         users.add(new User("a123", "112"));
         users.add(new User("a333", "112"));
@@ -113,5 +115,20 @@ class SectionViewModel extends ASectionCollectionViewModel<String, User> {
         users.add(new User("b123", "112"));
         users.add(new User("b1223", "112"));
         return users;
+    }
+
+    @Override
+    protected IItemViewBindingCreator<Object> createHeaderViewBindingHelper() {
+        return new IItemViewBindingCreator<Object>() {
+            @Override
+            public ViewBindingRes genViewBindingRes() {
+                return new ViewBindingRes(R.layout.item_header, ItemBinding.VAR_NONE);
+            }
+
+            @Override
+            public IItemViewModel genItemViewModel(Object item) {
+                return null;
+            }
+        };
     }
 }
