@@ -1,16 +1,12 @@
 package com.example.lqy.mvvm.base.viewModel;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.databinding.ObservableBoolean;
-import android.databinding.ObservableField;
 
 import com.example.lqy.mvvm.BR;
 import com.example.lqy.mvvm.R;
 import com.example.lqy.mvvm.base.IItemViewBindingCreator;
 import com.example.lqy.mvvm.list.ViewBindingRes;
-
-import java.util.ArrayList;
 
 /**
  * Created by qiyao on 2017/2/6.
@@ -28,7 +24,7 @@ public abstract class ALoadMoreCollectionViewModel<T> extends ASwipeRefreshColle
         return new IItemViewBindingCreator<Object>() {
             @Override
             public ViewBindingRes genViewBindingRes() {
-                return new ViewBindingRes(R.layout.item_footer_load_more, BR.viewModel);
+                return new ViewBindingRes(R.layout.item_load_more, BR.viewModel);
             }
 
             @Override

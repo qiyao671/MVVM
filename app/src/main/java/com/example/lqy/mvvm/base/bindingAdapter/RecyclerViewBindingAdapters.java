@@ -4,6 +4,7 @@ import android.databinding.BindingAdapter;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
+import com.example.lqy.mvvm.base.listener.OnLoadMoreListener;
 import com.example.lqy.mvvm.base.viewModel.ALoadMoreCollectionViewModel;
 
 /**
@@ -12,7 +13,7 @@ import com.example.lqy.mvvm.base.viewModel.ALoadMoreCollectionViewModel;
 
 public class RecyclerViewBindingAdapters {
     @BindingAdapter(value = "onLoadMore")
-    public void onScroll(RecyclerView recyclerView, final ALoadMoreCollectionViewModel.OnLoadMoreListener onLoadMoreListener) {
+    public void onScroll(RecyclerView recyclerView, final OnLoadMoreListener onLoadMoreListener) {
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {

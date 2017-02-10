@@ -24,7 +24,7 @@ public class LoadMoreCollectionViewModel extends ALoadMoreCollectionViewModel<Us
 
     @Override
     protected void onSwipeRefresh() {
-        requestData(RefreshMode.update);
+        requestData(RefreshMode.refresh);
     }
 
     protected ArrayList<IItemViewModel> generateItemViewModelList(ArrayList<User> items) {
@@ -34,6 +34,8 @@ public class LoadMoreCollectionViewModel extends ALoadMoreCollectionViewModel<Us
         }
         return itemViewModels;
     }
+
+
 
     @Override
     protected ArrayList<User> obtainDataSource(RefreshMode refreshMode) {

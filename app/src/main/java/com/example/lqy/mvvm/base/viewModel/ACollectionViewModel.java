@@ -2,8 +2,14 @@ package com.example.lqy.mvvm.base.viewModel;
 
 import android.content.Context;
 import android.databinding.ObservableArrayList;
+import android.databinding.ObservableBoolean;
+import android.databinding.ObservableField;
+import android.support.v4.widget.SwipeRefreshLayout;
 
+import com.example.lqy.mvvm.BR;
+import com.example.lqy.mvvm.R;
 import com.example.lqy.mvvm.base.IItemViewBindingCreator;
+import com.example.lqy.mvvm.base.listener.OnLoadMoreListener;
 import com.example.lqy.mvvm.list.ViewBindingRes;
 
 import java.util.ArrayList;
@@ -17,10 +23,21 @@ import me.tatarka.bindingcollectionadapter.OnItemBind;
  * 类描述：
  */
 
-public abstract class ACollectionViewModel<T> implements IViewModel {
+public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreListener, SwipeRefreshLayout.OnRefreshListener {
     private Context context;
     private IItemViewBindingCreator<Object> headerViewBindingCreator;
     private IItemViewBindingCreator<Object> footerViewBindingCreator;
+
+    //下拉刷新
+    public final ObservableField<SwipeRefreshLayout.OnRefreshListener> onRefreshListener = new ObservableField<>();
+    public final ObservableBoolean isRefreshing = new ObservableBoolean(false);
+    public final ObservableBoolean isRefreshEnable = new ObservableBoolean(false);
+
+    //加载更多
+    private boolean isNextLoadEnable = false;
+    private boolean isLoadMoreEnable = false;
+    private boolean isLoading = false;
+    private ViewBindingRes loadMoreRes = new ViewBindingRes(R.layout.item_load_more, BR.)
 
     //data for presenter
     private final ItemBinding itemBinding = ItemBinding.of(createOnItemBind());
@@ -33,6 +50,24 @@ public abstract class ACollectionViewModel<T> implements IViewModel {
         headerViewBindingCreator = createHeaderViewBindingHelper();
         footerViewBindingCreator = createFooterViewBindingHelper();
         initItemViewModelList();
+
+        onRefreshListener.set(this);
+    }
+
+    @Override
+    public void onRefresh() {
+        if (isRefreshEnable.get()) {
+            isRefreshing.set(true);
+            requestData(RefreshMode.refresh);
+        }
+    }
+
+    @Override
+    public void onLoadMore() {
+        if (isLoadMoreEnable && !isLoading && isNextLoadEnable) {
+            isLoading = true;
+            requestData(RefreshMode.load_more);
+        }
     }
 
     //创建OnItemBind用于创建ItemBinding
@@ -85,7 +120,7 @@ public abstract class ACollectionViewModel<T> implements IViewModel {
             itemViewModels.clear();
             addHeaderAndFooter();
             addListAtHeadOfItemViewModels(itemViewModelArrayList);
-        } else if (mode == RefreshMode.update) {
+        } else if (mode == RefreshMode.refresh) {
             addListAtHeadOfItemViewModels(itemViewModelArrayList);
         }
     }
@@ -152,6 +187,6 @@ public abstract class ACollectionViewModel<T> implements IViewModel {
         /**
          * 下拉，刷新最新
          */
-        update
+        refresh
     }
 }

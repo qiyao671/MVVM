@@ -9,18 +9,14 @@ import android.support.v4.widget.SwipeRefreshLayout;
  */
 
 public class SwipeRefreshLayoutBindingAdapters {
-    @BindingAdapter(value = "onRefresh")
-    public void onRefresh(SwipeRefreshLayout swipeRefreshLayout, SwipeRefreshLayout.OnRefreshListener listener) {
-        if (listener != null) {
-            swipeRefreshLayout.setEnabled(true);
-            swipeRefreshLayout.setOnRefreshListener(listener);
+    @BindingAdapter(value = {"onRefresh", "refreshEnable", "refreshing"}, requireAll = false)
+    public void setupRefresh(SwipeRefreshLayout swipeRefreshLayout, SwipeRefreshLayout.OnRefreshListener listener, boolean isRefreshEnable, boolean isRefreshing) {
+        if (listener == null) {
+            isRefreshEnable = false;
         } else {
-            swipeRefreshLayout.setEnabled(false);
+            swipeRefreshLayout.setOnRefreshListener(listener);
         }
-    }
-
-    @BindingAdapter(value = "refreshing")
-    public void refreshing(SwipeRefreshLayout swipeRefreshLayout, boolean refreshing) {
-        swipeRefreshLayout.setRefreshing(refreshing);
+        swipeRefreshLayout.setEnabled(isRefreshEnable);
+        swipeRefreshLayout.setRefreshing(isRefreshEnable && isRefreshing);
     }
 }
