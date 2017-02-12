@@ -3,7 +3,7 @@
     <data>
         <variable
             name="viewModel"
-            type="com.example.lqy.mvvm.base.viewModel.LoadMoreViewModel" />
+            type="com.example.lqy.mvvm.base.viewModel.itemViewModel.SimpleLoadMoreViewModel" />
     </data>
     <RelativeLayout
         android:layout_width="match_parent"

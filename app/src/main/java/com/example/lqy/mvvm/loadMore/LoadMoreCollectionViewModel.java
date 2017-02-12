@@ -3,10 +3,9 @@ package com.example.lqy.mvvm.loadMore;
 import android.app.Fragment;
 
 import com.example.lqy.mvvm.User;
-import com.example.lqy.mvvm.base.viewModel.ALoadMoreCollectionViewModel;
-import com.example.lqy.mvvm.base.viewModel.IItemViewModel;
+import com.example.lqy.mvvm.base.viewModel.itemViewModel.IItemViewModel;
 import com.example.lqy.mvvm.list.ItemViewModel;
-import com.example.lqy.mvvm.list.ViewBindingRes;
+import com.example.lqy.mvvm.base.other.ViewBindingRes;
 
 import java.util.ArrayList;
 

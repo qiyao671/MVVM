@@ -1,10 +1,9 @@
 package com.example.lqy.mvvm.sectionedList;
 
 import android.content.Context;
-import android.database.Observable;
 import android.databinding.ObservableField;
 
-import com.example.lqy.mvvm.base.viewModel.IItemViewModel;
+import com.example.lqy.mvvm.base.viewModel.itemViewModel.IItemViewModel;
 
 /**
  * Created by qiyao on 2017/2/3.

@@ -1,8 +1,7 @@
-package com.example.lqy.mvvm.base;
+package com.example.lqy.mvvm.base.other;
 
 import com.android.annotations.NonNull;
-import com.example.lqy.mvvm.base.viewModel.IItemViewModel;
-import com.example.lqy.mvvm.list.ViewBindingRes;
+import com.example.lqy.mvvm.base.viewModel.itemViewModel.IItemViewModel;
 
 /**
  * Created by qiyao on 2017/2/4.

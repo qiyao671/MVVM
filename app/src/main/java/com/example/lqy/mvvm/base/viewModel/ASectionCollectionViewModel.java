@@ -2,13 +2,12 @@ package com.example.lqy.mvvm.base.viewModel;
 
 import android.content.Context;
 
-import com.example.lqy.mvvm.list.ViewBindingRes;
+import com.example.lqy.mvvm.base.viewModel.itemViewModel.IItemViewModel;
+import com.example.lqy.mvvm.base.other.ViewBindingRes;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-
-import me.tatarka.bindingcollectionadapter.ItemBinding;
 
 /**
  * Created by qiyao on 2017/2/3.

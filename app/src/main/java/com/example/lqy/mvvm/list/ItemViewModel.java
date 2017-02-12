@@ -4,7 +4,7 @@ import android.content.Context;
 import android.databinding.ObservableField;
 import android.widget.Toast;
 
-import com.example.lqy.mvvm.base.viewModel.IItemViewModel;
+import com.example.lqy.mvvm.base.viewModel.itemViewModel.IItemViewModel;
 import com.example.lqy.mvvm.User;
 
 /**
@@ -31,5 +31,10 @@ public class ItemViewModel implements IItemViewModel {
 
     public void onClick() {
         Toast.makeText(context, user.getName() + " " + user.getPwd(), Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public int getItemViewType() {
+        return 0;
     }
 }

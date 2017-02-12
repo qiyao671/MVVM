@@ -2,9 +2,10 @@ package com.example.lqy.mvvm.list;
 
 import android.app.Fragment;
 
+import com.example.lqy.mvvm.base.other.ViewBindingRes;
 import com.example.lqy.mvvm.base.viewModel.ACollectionViewModel;
 import com.example.lqy.mvvm.User;
-import com.example.lqy.mvvm.base.viewModel.IItemViewModel;
+import com.example.lqy.mvvm.base.viewModel.itemViewModel.IItemViewModel;
 
 import java.util.ArrayList;
 

@@ -6,11 +6,12 @@ import android.databinding.ObservableBoolean;
 import android.databinding.ObservableField;
 import android.support.v4.widget.SwipeRefreshLayout;
 
-import com.example.lqy.mvvm.BR;
-import com.example.lqy.mvvm.R;
-import com.example.lqy.mvvm.base.IItemViewBindingCreator;
-import com.example.lqy.mvvm.base.listener.OnLoadMoreListener;
-import com.example.lqy.mvvm.list.ViewBindingRes;
+import com.example.lqy.mvvm.base.other.IItemViewBindingCreator;
+import com.example.lqy.mvvm.base.other.OnLoadMoreListener;
+import com.example.lqy.mvvm.base.other.SimpleLoadMoreViewBindingCreator;
+import com.example.lqy.mvvm.base.viewModel.itemViewModel.IItemViewModel;
+import com.example.lqy.mvvm.base.viewModel.itemViewModel.StaticItemViewModel;
+import com.example.lqy.mvvm.base.other.ViewBindingRes;
 
 import java.util.ArrayList;
 
@@ -25,8 +26,8 @@ import me.tatarka.bindingcollectionadapter.OnItemBind;
 
 public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreListener, SwipeRefreshLayout.OnRefreshListener {
     private Context context;
-    private IItemViewBindingCreator<Object> headerViewBindingCreator;
-    private IItemViewBindingCreator<Object> footerViewBindingCreator;
+    private IItemViewBindingCreator<Object> headerViewBindingCreator = createHeaderViewBindingHelper();
+    private IItemViewBindingCreator<Object> footerViewBindingCreator = createFooterViewBindingHelper();
 
     //下拉刷新
     public final ObservableField<SwipeRefreshLayout.OnRefreshListener> onRefreshListener = new ObservableField<>();
@@ -37,7 +38,8 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
     private boolean isNextLoadEnable = false;
     private boolean isLoadMoreEnable = false;
     private boolean isLoading = false;
-    private ViewBindingRes loadMoreRes = new ViewBindingRes(R.layout.item_load_more, BR.)
+    public final ObservableField<OnLoadMoreListener> onLoadMoreListener = new ObservableField<>();
+    private IItemViewBindingCreator<Object> loadMoreViewBindingCreator = createLoadMoreViewBindingHelper();
 
     //data for presenter
     private final ItemBinding itemBinding = ItemBinding.of(createOnItemBind());
@@ -47,13 +49,14 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
 
     public ACollectionViewModel(Context context) {
         this.context = context;
-        headerViewBindingCreator = createHeaderViewBindingHelper();
-        footerViewBindingCreator = createFooterViewBindingHelper();
+
         initItemViewModelList();
 
         onRefreshListener.set(this);
+        onLoadMoreListener.set(this);
     }
 
+    //刷新的回调
     @Override
     public void onRefresh() {
         if (isRefreshEnable.get()) {
@@ -62,6 +65,7 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
         }
     }
 
+    //加载更多的回调
     @Override
     public void onLoadMore() {
         if (isLoadMoreEnable && !isLoading && isNextLoadEnable) {
@@ -83,7 +87,7 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
     //设置position上的item的itemBinding 用于绑定item与它的view
     protected void setupItemView(ItemBinding itemBinding, int position, IItemViewModel item) {
         ViewBindingRes viewBindingRes = getBindingRes(position, item);
-        itemBinding.set(viewBindingRes.getBindingVariableRes(), viewBindingRes.getLayoutRes());
+        setItemBinding(itemBinding, viewBindingRes);
     }
 
     //itemBinding.set
@@ -91,25 +95,16 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
         itemBinding.set(viewBindingRes.getBindingVariableRes(), viewBindingRes.getLayoutRes());
     }
 
-    public ViewBindingRes getHeaderRes() {
-        return headerViewBindingCreator == null ? null : headerViewBindingCreator.genViewBindingRes();
-    }
-
-    public ViewBindingRes getFooterRes() {
-        return footerViewBindingCreator == null ? null :footerViewBindingCreator.genViewBindingRes();
-    }
-
-    public ItemBinding getItemBinding() {
-        return itemBinding;
-    }
-
     private ViewBindingRes getBindingRes(int position, IItemViewModel item) {
-        if (position == 0 && headerViewBindingCreator != null) {
-            return getHeaderRes();
-        } else if (position == itemViewModels.size() - 1 && footerViewBindingCreator != null) {
-            return getFooterRes();
-        } else {
-            return getItemRes(position, item);
+        switch (item.getItemViewType()) {
+            case StaticItemViewModel.TYPE_HEADER:
+                return getHeaderRes();
+            case StaticItemViewModel.TYPE_FOOTER:
+                return getFooterRes();
+            case StaticItemViewModel.TYPE_LOAD_MORE:
+                return getLoadMoreViewRes();
+            default:
+                return getItemRes(position, item);
         }
     }
 
@@ -118,19 +113,19 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
             addListAtFootOfItemViewModels(itemViewModelArrayList);
         } else if (mode == RefreshMode.reset) {
             itemViewModels.clear();
-            addHeaderAndFooter();
             addListAtHeadOfItemViewModels(itemViewModelArrayList);
+            addStaticViewModel();
         } else if (mode == RefreshMode.refresh) {
             addListAtHeadOfItemViewModels(itemViewModelArrayList);
         }
     }
 
     private void addListAtHeadOfItemViewModels(ArrayList<IItemViewModel> itemViewModelArrayList) {
-        itemViewModels.addAll(getHeaderRes() == null ? 0 : 1, itemViewModelArrayList);
+        itemViewModels.addAll(getHeaderViewCount(), itemViewModelArrayList);
     }
 
     private void addListAtFootOfItemViewModels(ArrayList<IItemViewModel> itemViewModelArrayList) {
-        int index = getFooterRes() == null ? itemViewModels.size() - 1 : itemViewModels.size() - 2;
+        int index = itemViewModels.size() - getFooterViewCount() - getLoadMoreViewCount();
         itemViewModels.addAll(index, itemViewModelArrayList);
     }
 
@@ -138,16 +133,23 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
         requestData(RefreshMode.reset);
     }
 
-    private void addHeaderAndFooter() {
+    private void addStaticViewModel() {
         //添加header view model
-        if (headerViewBindingCreator != null) {
-            itemViewModels.add(headerViewBindingCreator.genItemViewModel(null));
+        if (getHeaderViewCount() > 0) {
+            itemViewModels.add(0, headerViewBindingCreator.genItemViewModel(null));
         }
 
         //添加footer view model
-        if (footerViewBindingCreator != null) {
+        if (getFooterViewCount() > 0) {
             itemViewModels.add(footerViewBindingCreator.genItemViewModel(null));
         }
+
+        //添加load more view model
+        int itemCount = itemViewModels.size() - (getHeaderViewCount() + getFooterViewCount());
+        if (getLoadMoreViewCount() > 0 && itemCount > 0) {
+            itemViewModels.add(loadMoreViewBindingCreator.genItemViewModel(null));
+        }
+        // TODO: 2017/2/10 添加empty view
     }
 
     protected void requestData(RefreshMode refreshMode) {
@@ -164,16 +166,47 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
         return null;
     }
 
+    protected IItemViewBindingCreator<Object> createLoadMoreViewBindingHelper() {
+        return new SimpleLoadMoreViewBindingCreator(context);
+    }
+
     protected abstract ArrayList<IItemViewModel> generateItemViewModelList(ArrayList<T> items);
 
     protected abstract ArrayList<T> obtainDataSource(RefreshMode refreshMode);
 
     protected abstract ViewBindingRes getItemRes(int position, IItemViewModel item);
 
+    public ViewBindingRes getHeaderRes() {
+        return headerViewBindingCreator == null ? null : headerViewBindingCreator.genViewBindingRes();
+    }
+
+    public ViewBindingRes getFooterRes() {
+        return footerViewBindingCreator == null ? null :footerViewBindingCreator.genViewBindingRes();
+    }
+
+    public ViewBindingRes getLoadMoreViewRes() {
+        return loadMoreViewBindingCreator == null ? null :loadMoreViewBindingCreator.genViewBindingRes();
+    }
+
+    public ItemBinding getItemBinding() {
+        return itemBinding;
+    }
+
     public Context getContext() {
         return context;
     }
 
+    private int getHeaderViewCount() {
+        return getHeaderRes() == null ? 0 : 1;
+    }
+
+    private int getFooterViewCount() {
+        return getFooterRes() == null ? 0 : 1;
+    }
+
+    private int getLoadMoreViewCount() {
+        return getHeaderRes() == null ? 0 : 1;
+    }
 
     public enum RefreshMode {
         /**

@@ -1,4 +1,4 @@
-package com.example.lqy.mvvm.list;
+package com.example.lqy.mvvm.base.other;
 
 /**
  * Created by qiyao on 2017/2/3.

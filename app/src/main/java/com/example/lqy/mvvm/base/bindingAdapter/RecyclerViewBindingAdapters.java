@@ -4,8 +4,7 @@ import android.databinding.BindingAdapter;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
-import com.example.lqy.mvvm.base.listener.OnLoadMoreListener;
-import com.example.lqy.mvvm.base.viewModel.ALoadMoreCollectionViewModel;
+import com.example.lqy.mvvm.base.other.OnLoadMoreListener;
 
 /**
  * Created by qiyao on 2017/2/6.
