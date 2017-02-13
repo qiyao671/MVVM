@@ -14,7 +14,17 @@ import com.example.lqy.mvvm.base.viewModel.itemViewModel.StaticItemViewModel;
 import com.example.lqy.mvvm.base.other.ViewBindingRes;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.ObservableTransformer;
+import io.reactivex.Observer;
+import io.reactivex.SingleObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import me.tatarka.bindingcollectionadapter.ItemBinding;
 import me.tatarka.bindingcollectionadapter.OnItemBind;
 
@@ -108,23 +118,23 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
         }
     }
 
-    protected void addListToItemViewModels(RefreshMode mode, ArrayList<IItemViewModel> itemViewModelArrayList) {
+    protected void addListToItemViewModels(RefreshMode mode, List<IItemViewModel> itemViewModelArrayList) {
         if (mode == RefreshMode.load_more) {
             addListAtFootOfItemViewModels(itemViewModelArrayList);
         } else if (mode == RefreshMode.reset) {
             itemViewModels.clear();
-            addListAtHeadOfItemViewModels(itemViewModelArrayList);
+            itemViewModels.addAll(itemViewModelArrayList);
             addStaticViewModel();
         } else if (mode == RefreshMode.refresh) {
             addListAtHeadOfItemViewModels(itemViewModelArrayList);
         }
     }
 
-    private void addListAtHeadOfItemViewModels(ArrayList<IItemViewModel> itemViewModelArrayList) {
+    private void addListAtHeadOfItemViewModels(List<IItemViewModel> itemViewModelArrayList) {
         itemViewModels.addAll(getHeaderViewCount(), itemViewModelArrayList);
     }
 
-    private void addListAtFootOfItemViewModels(ArrayList<IItemViewModel> itemViewModelArrayList) {
+    private void addListAtFootOfItemViewModels(List<IItemViewModel> itemViewModelArrayList) {
         int index = itemViewModels.size() - getFooterViewCount() - getLoadMoreViewCount();
         itemViewModels.addAll(index, itemViewModelArrayList);
     }
@@ -176,6 +186,8 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
 
     protected abstract ViewBindingRes getItemRes(int position, IItemViewModel item);
 
+    protected abstract IItemViewModel newItemViewModel(T item);
+
     public ViewBindingRes getHeaderRes() {
         return headerViewBindingCreator == null ? null : headerViewBindingCreator.genViewBindingRes();
     }
@@ -222,4 +234,67 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
          */
         refresh
     }
+
+    abstract class APagingTask<K> implements SingleObserver<List<IItemViewModel>>{
+        RefreshMode mode;
+
+        public APagingTask(RefreshMode mode) {
+            this.mode = mode;
+        }
+
+        private ObservableTransformer<K, List<T>> composer = new ObservableTransformer<K, List<T>>() {
+            @Override
+            public ObservableSource<List<T>> apply(Observable<K> upstream) {
+                return handleData(upstream);
+            }
+        };
+        public abstract Observable<K> getData();
+        public abstract ObservableSource<List<T>> handleData(Observable<K> upstream);
+        public void execute() {
+            getData()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.newThread())
+                    .compose(composer)
+                    .flatMap(new Function<List<T>, ObservableSource<T>>() {
+                        @Override
+                        public ObservableSource<T> apply(List<T> ts) throws Exception {
+                            return Observable.fromIterable(ts);
+                        }
+                    })
+                    .map(new Function<T, IItemViewModel>() {
+                        @Override
+                        public IItemViewModel apply(T t) throws Exception {
+                            return newItemViewModel(t);
+                        }
+                    })
+                    .toList()
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(this);
+
+        }
+
+        @Override
+        public void onSuccess(List<IItemViewModel> itemViewModelList) {
+            if (isLoadMoreEnable && isLoading) {
+                isLoading = false;
+                // TODO: 2017/2/13 设置loading界面 加载完成或加载更多
+                if ()
+            }
+            if (isRefreshEnable.get() && isRefreshing.get()) {
+                isRefreshing.set(false);
+            }
+            if (!itemViewModelList.isEmpty()) {
+                addListToItemViewModels(mode, itemViewModelList);
+            } else {
+                // TODO: 2017/2/13 设置empty view
+
+            }
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            // TODO: 2017/2/13 加载失败
+        }
+    }
+
 }
