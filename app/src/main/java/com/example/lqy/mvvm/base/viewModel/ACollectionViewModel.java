@@ -13,9 +13,13 @@ import com.example.lqy.mvvm.base.viewModel.itemViewModel.IItemViewModel;
 import com.example.lqy.mvvm.base.viewModel.itemViewModel.StaticItemViewModel;
 import com.example.lqy.mvvm.base.other.ViewBindingRes;
 
+import org.reactivestreams.Publisher;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.Flowable;
+import io.reactivex.FlowableTransformer;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.reactivex.ObservableTransformer;
@@ -238,35 +242,21 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
     abstract class APagingTask<K> implements SingleObserver<List<IItemViewModel>>{
         RefreshMode mode;
 
+        private FlowableTransformer<K, List<T>> composer = this::handleData;
+
         public APagingTask(RefreshMode mode) {
             this.mode = mode;
         }
 
-        private ObservableTransformer<K, List<T>> composer = new ObservableTransformer<K, List<T>>() {
-            @Override
-            public ObservableSource<List<T>> apply(Observable<K> upstream) {
-                return handleData(upstream);
-            }
-        };
-        public abstract Observable<K> getData();
-        public abstract ObservableSource<List<T>> handleData(Observable<K> upstream);
+        protected abstract Flowable<K> getData();
+        protected abstract Publisher<List<T>> handleData(Flowable<K> upstream);
         public void execute() {
             getData()
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.newThread())
                     .compose(composer)
-                    .flatMap(new Function<List<T>, ObservableSource<T>>() {
-                        @Override
-                        public ObservableSource<T> apply(List<T> ts) throws Exception {
-                            return Observable.fromIterable(ts);
-                        }
-                    })
-                    .map(new Function<T, IItemViewModel>() {
-                        @Override
-                        public IItemViewModel apply(T t) throws Exception {
-                            return newItemViewModel(t);
-                        }
-                    })
+                    .flatMap(Flowable::fromIterable)
+                    .map(ACollectionViewModel.this::newItemViewModel)
                     .toList()
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(this);
