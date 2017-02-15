@@ -4,7 +4,8 @@ import android.app.Fragment;
 
 import com.example.lqy.mvvm.BR;
 import com.example.lqy.mvvm.R;
-import com.example.lqy.mvvm.User;
+import com.example.lqy.mvvm.base.viewModel.ACollectionViewModel;
+import com.example.lqy.mvvm.bean.User;
 import com.example.lqy.mvvm.base.other.IItemViewBindingCreator;
 import com.example.lqy.mvvm.base.viewModel.ASectionCollectionViewModel;
 import com.example.lqy.mvvm.base.viewModel.itemViewModel.IItemViewModel;
@@ -105,7 +106,7 @@ class SectionViewModel extends ASectionCollectionViewModel<String, User> {
             }
         });
     }
-
+/*
     @Override
     protected ArrayList<User> obtainDataSource(RefreshMode refreshMode) {
         ArrayList<User> users = new ArrayList<>();
@@ -115,7 +116,7 @@ class SectionViewModel extends ASectionCollectionViewModel<String, User> {
         users.add(new User("b123", "112"));
         users.add(new User("b1223", "112"));
         return users;
-    }
+    }*/
 
     @Override
     protected IItemViewBindingCreator<Object> createHeaderViewBindingHelper() {
@@ -130,5 +131,15 @@ class SectionViewModel extends ASectionCollectionViewModel<String, User> {
                 return null;
             }
         };
+    }
+
+    @Override
+    protected void requestData(RefreshMode refreshMode) {
+
+    }
+
+    @Override
+    protected IItemViewModel newItemViewModel(User item) {
+        return null;
     }
 }

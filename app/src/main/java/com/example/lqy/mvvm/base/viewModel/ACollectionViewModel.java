@@ -10,27 +10,20 @@ import com.example.lqy.mvvm.base.other.IItemViewBindingCreator;
 import com.example.lqy.mvvm.base.other.OnLoadMoreListener;
 import com.example.lqy.mvvm.base.other.SimpleLoadMoreViewBindingCreator;
 import com.example.lqy.mvvm.base.viewModel.itemViewModel.IItemViewModel;
+import com.example.lqy.mvvm.base.viewModel.itemViewModel.SimpleLoadMoreViewModel;
 import com.example.lqy.mvvm.base.viewModel.itemViewModel.StaticItemViewModel;
 import com.example.lqy.mvvm.base.other.ViewBindingRes;
 
-import org.reactivestreams.Publisher;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import io.reactivex.Flowable;
-import io.reactivex.FlowableTransformer;
-import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
-import io.reactivex.ObservableTransformer;
-import io.reactivex.Observer;
-import io.reactivex.SingleObserver;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Function;
-import io.reactivex.schedulers.Schedulers;
 import me.tatarka.bindingcollectionadapter.ItemBinding;
 import me.tatarka.bindingcollectionadapter.OnItemBind;
+import rx.Observable;
+import rx.Observer;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 /**
  * Created by lvqiyao (amorfatilay@163.com).
@@ -53,7 +46,7 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
     private boolean isLoadMoreEnable = false;
     private boolean isLoading = false;
     public final ObservableField<OnLoadMoreListener> onLoadMoreListener = new ObservableField<>();
-    private IItemViewBindingCreator<Object> loadMoreViewBindingCreator = createLoadMoreViewBindingHelper();
+    private SimpleLoadMoreViewBindingCreator loadMoreViewBindingCreator = createLoadMoreViewBindingHelper();
 
     //data for presenter
     private final ItemBinding itemBinding = ItemBinding.of(createOnItemBind());
@@ -90,12 +83,7 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
 
     //创建OnItemBind用于创建ItemBinding
     private OnItemBind<IItemViewModel> createOnItemBind(){
-        return new OnItemBind<IItemViewModel>() {
-            @Override
-            public void onItemBind(ItemBinding itemBinding, int position, IItemViewModel item) {
-                setupItemView(itemBinding, position, item);
-            }
-        };
+        return this::setupItemView;
     }
 
     //设置position上的item的itemBinding 用于绑定item与它的view
@@ -166,12 +154,6 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
         // TODO: 2017/2/10 添加empty view
     }
 
-    protected void requestData(RefreshMode refreshMode) {
-        ArrayList<T> items = obtainDataSource(refreshMode);
-        ArrayList<IItemViewModel> itemViewModelArrayList = generateItemViewModelList(items);
-        addListToItemViewModels(refreshMode, itemViewModelArrayList);
-    }
-
     protected IItemViewBindingCreator<Object> createHeaderViewBindingHelper() {
         return null;
     }
@@ -180,13 +162,15 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
         return null;
     }
 
-    protected IItemViewBindingCreator<Object> createLoadMoreViewBindingHelper() {
+    protected SimpleLoadMoreViewBindingCreator createLoadMoreViewBindingHelper() {
         return new SimpleLoadMoreViewBindingCreator(context);
     }
 
-    protected abstract ArrayList<IItemViewModel> generateItemViewModelList(ArrayList<T> items);
+//    protected abstract ArrayList<IItemViewModel> generateItemViewModelList(ArrayList<T> items);
+//
+//    protected abstract ArrayList<T> obtainDataSource(RefreshMode refreshMode);
 
-    protected abstract ArrayList<T> obtainDataSource(RefreshMode refreshMode);
+    protected abstract void requestData(RefreshMode refreshMode);
 
     protected abstract ViewBindingRes getItemRes(int position, IItemViewModel item);
 
@@ -239,23 +223,24 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
         refresh
     }
 
-    abstract class APagingTask<K> implements SingleObserver<List<IItemViewModel>>{
+    protected abstract class APagingTask<Result> implements Observer<List<IItemViewModel>> {
         RefreshMode mode;
 
-        private FlowableTransformer<K, List<T>> composer = this::handleData;
+        private Observable.Transformer<Result, List<T>> composer = this::handleData;
 
         public APagingTask(RefreshMode mode) {
             this.mode = mode;
         }
 
-        protected abstract Flowable<K> getData();
-        protected abstract Publisher<List<T>> handleData(Flowable<K> upstream);
+        protected abstract Observable<Result> getData();
+        protected abstract Observable<List<T>> handleData(Observable<Result> upstream);
         public void execute() {
+            // TODO: 2017/2/13 设置loading界面 加载完成或加载更多
             getData()
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.newThread())
                     .compose(composer)
-                    .flatMap(Flowable::fromIterable)
+                    .flatMap(Observable::from)
                     .map(ACollectionViewModel.this::newItemViewModel)
                     .toList()
                     .observeOn(AndroidSchedulers.mainThread())
@@ -264,26 +249,35 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
         }
 
         @Override
-        public void onSuccess(List<IItemViewModel> itemViewModelList) {
+        public void onError(Throwable e) {
+            // TODO: 2017/2/13 加载失败
+        }
+
+        @Override
+        public void onCompleted() {
             if (isLoadMoreEnable && isLoading) {
                 isLoading = false;
-                // TODO: 2017/2/13 设置loading界面 加载完成或加载更多
-                if ()
+                SimpleLoadMoreViewModel loadMoreViewModel = loadMoreViewBindingCreator.genItemViewModel();
+
+                if (isNextLoadEnable) {
+                    loadMoreViewModel.loadMore();
+                } else {
+                    loadMoreViewModel.noMore();
+                }
             }
             if (isRefreshEnable.get() && isRefreshing.get()) {
                 isRefreshing.set(false);
             }
-            if (!itemViewModelList.isEmpty()) {
-                addListToItemViewModels(mode, itemViewModelList);
-            } else {
-                // TODO: 2017/2/13 设置empty view
-
+            if (itemViewModels.isEmpty()) {
+                // TODO: 2017/2/15 设置empty view
             }
         }
 
         @Override
-        public void onError(Throwable e) {
-            // TODO: 2017/2/13 加载失败
+        public void onNext(List<IItemViewModel> iItemViewModels) {
+            if (!iItemViewModels.isEmpty()) {
+                addListToItemViewModels(mode, iItemViewModels);
+            }
         }
     }
 

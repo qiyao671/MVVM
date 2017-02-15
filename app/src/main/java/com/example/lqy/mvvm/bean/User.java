@@ -1,4 +1,4 @@
-package com.example.lqy.mvvm;
+package com.example.lqy.mvvm.bean;
 
 /**
  * Created by lvqiyao (amorfatilay@163.com).

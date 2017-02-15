@@ -4,7 +4,7 @@ import android.app.Fragment;
 
 import com.example.lqy.mvvm.base.other.ViewBindingRes;
 import com.example.lqy.mvvm.base.viewModel.ACollectionViewModel;
-import com.example.lqy.mvvm.User;
+import com.example.lqy.mvvm.bean.User;
 import com.example.lqy.mvvm.base.viewModel.itemViewModel.IItemViewModel;
 
 import java.util.ArrayList;
@@ -38,31 +38,41 @@ public class ViewModel extends ACollectionViewModel<User> {
     }
 
 
-    @Override
-    protected ArrayList<IItemViewModel> generateItemViewModelList(ArrayList<User> items) {
-        ArrayList<IItemViewModel> list = new ArrayList<>();
-        for (User item : items) {
-            list.add(new ItemViewModel(fragment.getActivity(), item));
-        }
-        return list;
-    }
+//    @Override
+//    protected ArrayList<IItemViewModel> generateItemViewModelList(ArrayList<User> items) {
+//        ArrayList<IItemViewModel> list = new ArrayList<>();
+//        for (User item : items) {
+//            list.add(new ItemViewModel(fragment.getActivity(), item));
+//        }
+//        return list;
+//    }
+
+//    @Override
+//    protected ArrayList<User> obtainDataSource(RefreshMode refreshMode) {
+//        ArrayList<User> list = new ArrayList<>();
+////        list.add(new ItemViewModel(fragment.getActivity(), new User("name1", "pwd1")));
+////        list.add(new ItemViewModel(fragment.getActivity(), new User("name2", "pwd2")));
+////        list.add(new ItemViewModel(fragment.getActivity(), new User("name3", "pwd3")));
+////        list.add(new ItemViewModel(fragment.getActivity(), new User("name4", "pwd4")));
+//        list.add(new User("name1", "pwd1"));
+//        list.add(new User("name2", "pwd2"));
+//        list.add(new User("name3", "pwd3"));
+//        list.add(new User("name4", "pwd4"));
+//        return list;
+//    }
 
     @Override
-    protected ArrayList<User> obtainDataSource(RefreshMode refreshMode) {
-        ArrayList<User> list = new ArrayList<>();
-//        list.add(new ItemViewModel(fragment.getActivity(), new User("name1", "pwd1")));
-//        list.add(new ItemViewModel(fragment.getActivity(), new User("name2", "pwd2")));
-//        list.add(new ItemViewModel(fragment.getActivity(), new User("name3", "pwd3")));
-//        list.add(new ItemViewModel(fragment.getActivity(), new User("name4", "pwd4")));
-        list.add(new User("name1", "pwd1"));
-        list.add(new User("name2", "pwd2"));
-        list.add(new User("name3", "pwd3"));
-        list.add(new User("name4", "pwd4"));
-        return list;
+    protected void requestData(RefreshMode refreshMode) {
+
     }
 
     @Override
     protected ViewBindingRes getItemRes(int position, IItemViewModel item) {
+        return null;
+    }
+
+    @Override
+    protected IItemViewModel newItemViewModel(User item) {
         return null;
     }
 }

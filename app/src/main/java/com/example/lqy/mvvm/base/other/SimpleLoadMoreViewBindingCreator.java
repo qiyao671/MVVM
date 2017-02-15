@@ -15,8 +15,10 @@ import com.example.lqy.mvvm.base.viewModel.itemViewModel.SimpleLoadMoreViewModel
 
 public class SimpleLoadMoreViewBindingCreator implements IItemViewBindingCreator<Object> {
     private Context context;
+    private SimpleLoadMoreViewModel viewModel;
     public SimpleLoadMoreViewBindingCreator(Context context) {
         this.context = context;
+        viewModel = new SimpleLoadMoreViewModel(null);
     }
 
     @Override
@@ -26,6 +28,10 @@ public class SimpleLoadMoreViewBindingCreator implements IItemViewBindingCreator
 
     @Override
     public IItemViewModel genItemViewModel(Object item) {
-        return new SimpleLoadMoreViewModel(context);
+        return viewModel;
+    }
+
+    public SimpleLoadMoreViewModel genItemViewModel() {
+        return viewModel;
     }
 }

@@ -63,18 +63,18 @@ public abstract class ASectionCollectionViewModel<H, T> extends ACollectionViewM
         return sectionedItems;
     }
 
-    @Override
-    protected ArrayList<IItemViewModel> generateItemViewModelList(ArrayList<T> items) {
-        setupDataSource(items);
-        ArrayList<IItemViewModel> itemViewModels = new ArrayList<>();
-        for (int section = 0; section < numberOfSections(); section++) {
-            itemViewModels.add(headerViewModelOfSection(section));
-            for (int index = 0; index < numberOfItemsInSection(section); index++) {
-                itemViewModels.add(itemViewModelAtIndexInSection(index, section));
-            }
-        }
-        return itemViewModels;
-    }
+//    @Override
+//    protected ArrayList<IItemViewModel> generateItemViewModelList(ArrayList<T> items) {
+//        setupDataSource(items);
+//        ArrayList<IItemViewModel> itemViewModels = new ArrayList<>();
+//        for (int section = 0; section < numberOfSections(); section++) {
+//            itemViewModels.add(headerViewModelOfSection(section));
+//            for (int index = 0; index < numberOfItemsInSection(section); index++) {
+//                itemViewModels.add(itemViewModelAtIndexInSection(index, section));
+//            }
+//        }
+//        return itemViewModels;
+//    }
 
     @Override
     protected ViewBindingRes getItemRes(int position, IItemViewModel item) {

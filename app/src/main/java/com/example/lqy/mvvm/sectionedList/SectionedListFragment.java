@@ -1,6 +1,6 @@
 package com.example.lqy.mvvm.sectionedList;
 
-import com.example.lqy.mvvm.User;
+import com.example.lqy.mvvm.bean.User;
 import com.example.lqy.mvvm.base.fragment.ARecyclerViewFragment;
 import com.example.lqy.mvvm.base.viewModel.ACollectionViewModel;
 

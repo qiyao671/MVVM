@@ -5,7 +5,7 @@ import android.databinding.ObservableField;
 import android.widget.Toast;
 
 import com.example.lqy.mvvm.base.viewModel.itemViewModel.IItemViewModel;
-import com.example.lqy.mvvm.User;
+import com.example.lqy.mvvm.bean.User;
 
 /**
  * Created by lvqiyao (amorfatilay@163.com).

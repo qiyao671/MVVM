@@ -12,12 +12,16 @@ import com.example.lqy.mvvm.R;
 public class SimpleLoadMoreViewModel implements IItemViewModel {
     //context
     private Context context;
-    private final ObservableField<String> text = new ObservableField<>();
+    public final ObservableField<String> text = new ObservableField<>();
 
 
     public SimpleLoadMoreViewModel(Context context) {
         this.context = context;
         isLoading();
+    }
+
+    public void loadMore() {
+        text.set(getString(R.string.load_more));
     }
 
     public void noMore() {
@@ -34,5 +38,10 @@ public class SimpleLoadMoreViewModel implements IItemViewModel {
 
     private String getString(int strRes) {
         return context.getString(R.string.no_more);
+    }
+
+    @Override
+    public int getItemViewType() {
+        return StaticItemViewModel.TYPE_LOAD_MORE;
     }
 }

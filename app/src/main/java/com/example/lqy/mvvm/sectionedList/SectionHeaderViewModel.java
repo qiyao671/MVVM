@@ -24,4 +24,9 @@ public class SectionHeaderViewModel implements IItemViewModel {
         this.titleModel = titleModel;
         this.title.set(titleModel);
     }
+
+    @Override
+    public int getItemViewType() {
+        return 0;
+    }
 }
