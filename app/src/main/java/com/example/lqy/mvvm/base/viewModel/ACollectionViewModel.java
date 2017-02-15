@@ -5,15 +5,15 @@ import android.databinding.ObservableArrayList;
 import android.databinding.ObservableBoolean;
 import android.databinding.ObservableField;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.Log;
 
 import com.example.lqy.mvvm.base.other.IItemViewBindingCreator;
 import com.example.lqy.mvvm.base.other.OnLoadMoreListener;
 import com.example.lqy.mvvm.base.other.SimpleLoadMoreViewBindingCreator;
+import com.example.lqy.mvvm.base.other.ViewBindingRes;
 import com.example.lqy.mvvm.base.viewModel.itemViewModel.IItemViewModel;
 import com.example.lqy.mvvm.base.viewModel.itemViewModel.SimpleLoadMoreViewModel;
 import com.example.lqy.mvvm.base.viewModel.itemViewModel.StaticItemViewModel;
-import com.example.lqy.mvvm.base.other.ViewBindingRes;
-
 
 import java.util.List;
 
@@ -21,7 +21,6 @@ import me.tatarka.bindingcollectionadapter.ItemBinding;
 import me.tatarka.bindingcollectionadapter.OnItemBind;
 import rx.Observable;
 import rx.Observer;
-import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
@@ -33,8 +32,8 @@ import rx.schedulers.Schedulers;
 
 public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreListener, SwipeRefreshLayout.OnRefreshListener {
     private Context context;
-    private IItemViewBindingCreator<Object> headerViewBindingCreator = createHeaderViewBindingHelper();
-    private IItemViewBindingCreator<Object> footerViewBindingCreator = createFooterViewBindingHelper();
+    private IItemViewBindingCreator<Object> headerViewBindingCreator;
+    private IItemViewBindingCreator<Object> footerViewBindingCreator;
 
     //下拉刷新
     public final ObservableField<SwipeRefreshLayout.OnRefreshListener> onRefreshListener = new ObservableField<>();
@@ -46,7 +45,7 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
     private boolean isLoadMoreEnable = false;
     private boolean isLoading = false;
     public final ObservableField<OnLoadMoreListener> onLoadMoreListener = new ObservableField<>();
-    private SimpleLoadMoreViewBindingCreator loadMoreViewBindingCreator = createLoadMoreViewBindingHelper();
+    private SimpleLoadMoreViewBindingCreator loadMoreViewBindingCreator;
 
     //data for presenter
     private final ItemBinding itemBinding = ItemBinding.of(createOnItemBind());
@@ -56,6 +55,10 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
 
     public ACollectionViewModel(Context context) {
         this.context = context;
+
+        headerViewBindingCreator = createHeaderViewBindingHelper();
+        footerViewBindingCreator = createFooterViewBindingHelper();
+        loadMoreViewBindingCreator = createLoadMoreViewBindingHelper();
 
         initItemViewModelList();
 
@@ -251,6 +254,7 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
         @Override
         public void onError(Throwable e) {
             // TODO: 2017/2/13 加载失败
+            Log.e("TAG", "onError: " + e.getMessage());
         }
 
         @Override

@@ -12,7 +12,7 @@ import com.example.lqy.mvvm.base.other.OnLoadMoreListener;
 
 public class RecyclerViewBindingAdapters {
     @BindingAdapter(value = "onLoadMore")
-    public void onScroll(RecyclerView recyclerView, final OnLoadMoreListener onLoadMoreListener) {
+    public static void onScroll(RecyclerView recyclerView, final OnLoadMoreListener onLoadMoreListener) {
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {

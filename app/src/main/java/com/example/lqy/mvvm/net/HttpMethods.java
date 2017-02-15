@@ -1,24 +1,14 @@
 package com.example.lqy.mvvm.net;
 
-import com.example.lqy.mvvm.BuildConfig;
 import com.example.lqy.mvvm.bean.DailyListBean;
 
-
-import java.io.File;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import okhttp3.Cache;
-import okhttp3.CacheControl;
-import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import rx.Observable;
-import rx.functions.Func1;
 
 /**
  * Created by qiyao on 2017/2/15.
@@ -30,7 +20,7 @@ public class HttpMethods {
     private static HttpMethods INSTANCE;
 
     private void init() {
-//        initOkHttp();
+        initOkHttp();
         zhihuApiService = getApiService(ZhiHuApiService.HOST, ZhiHuApiService.class);
     }
 
@@ -38,8 +28,8 @@ public class HttpMethods {
         init();
     }
 
-//    private static void initOkHttp() {
-//        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+    private void initOkHttp() {
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
 //        if (BuildConfig.DEBUG) {
 //            // https://drakeet.me/retrofit-2-0-okhttp-3-0-config
 //            HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
@@ -76,8 +66,8 @@ public class HttpMethods {
 //        builder.writeTimeout(20, TimeUnit.SECONDS);
 //        //错误重连
 //        builder.retryOnConnectionFailure(true);
-//        sOkHttpClient = builder.build();
-//    }
+          okHttpClient = builder.build();
+    }
 
     public static HttpMethods getInstance() {
         if (INSTANCE == null) {
@@ -99,11 +89,6 @@ public class HttpMethods {
 
     public Observable<List<DailyListBean.StoriesBean>> getDailyList() {
         return zhihuApiService.getDailyList()
-                .map(new Func1<DailyListBean, List<DailyListBean.StoriesBean>>() {
-                    @Override
-                    public List<DailyListBean.StoriesBean> call(DailyListBean dailyListBean) {
-                        return null;
-                    }
-                });
+                .map(DailyListBean::getStories);
     }
 }

@@ -17,7 +17,7 @@ public class SimpleLoadMoreViewModel implements IItemViewModel {
 
     public SimpleLoadMoreViewModel(Context context) {
         this.context = context;
-        isLoading();
+        noMore();
     }
 
     public void loadMore() {

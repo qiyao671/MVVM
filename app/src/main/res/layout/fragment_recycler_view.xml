@@ -3,7 +3,8 @@
     xmlns:bind="http://schemas.android.com/apk/res-auto">
 
     <data>
-        <import type="me.tatarka.bindingcollectionadapter.LayoutManagers" />
+        <import
+            type="me.tatarka.bindingcollectionadapter.LayoutManagers" />
         <variable
             name="viewModel"
             type="com.example.lqy.mvvm.base.viewModel.ACollectionViewModel" />
@@ -15,6 +16,7 @@
         <android.support.v4.widget.SwipeRefreshLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            bind:refreshEnable="@{viewModel.isRefreshEnable}"
             bind:refreshing="@{viewModel.isRefreshing}"
             bind:onRefresh="@{viewModel.onRefreshListener}">
         <android.support.v7.widget.RecyclerView
@@ -23,6 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             bind:layoutManager="@{LayoutManagers.linear()}"
+            bind:onLoadMore="@{viewModel.onLoadMoreListener}"
             bind:items="@{viewModel.itemViewModels}"
             bind:itemBinding="@{viewModel.getItemBinding()}"
             />

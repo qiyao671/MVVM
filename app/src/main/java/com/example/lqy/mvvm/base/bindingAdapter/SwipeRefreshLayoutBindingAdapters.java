@@ -1,7 +1,6 @@
 package com.example.lqy.mvvm.base.bindingAdapter;
 
 import android.databinding.BindingAdapter;
-import android.databinding.BindingMethods;
 import android.support.v4.widget.SwipeRefreshLayout;
 
 /**
@@ -10,7 +9,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 
 public class SwipeRefreshLayoutBindingAdapters {
     @BindingAdapter(value = {"onRefresh", "refreshEnable", "refreshing"}, requireAll = false)
-    public void setupRefresh(SwipeRefreshLayout swipeRefreshLayout, SwipeRefreshLayout.OnRefreshListener listener, boolean isRefreshEnable, boolean isRefreshing) {
+    public static void setupRefresh(SwipeRefreshLayout swipeRefreshLayout, SwipeRefreshLayout.OnRefreshListener listener, boolean isRefreshEnable, boolean isRefreshing) {
         if (listener == null) {
             isRefreshEnable = false;
         } else {

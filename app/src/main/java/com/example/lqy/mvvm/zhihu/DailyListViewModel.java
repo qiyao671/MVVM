@@ -8,8 +8,6 @@ import com.example.lqy.mvvm.base.viewModel.itemViewModel.IItemViewModel;
 import com.example.lqy.mvvm.bean.DailyListBean;
 import com.example.lqy.mvvm.net.HttpMethods;
 
-
-import java.util.ArrayList;
 import java.util.List;
 
 import rx.Observable;
@@ -25,7 +23,7 @@ public class DailyListViewModel extends ACollectionViewModel<DailyListBean.Stori
 
     @Override
     protected void requestData(RefreshMode refreshMode) {
-        new GetDailyListTask(refreshMode);
+        new GetDailyListTask(refreshMode).execute();
     }
 
     @Override
@@ -35,6 +33,7 @@ public class DailyListViewModel extends ACollectionViewModel<DailyListBean.Stori
 
     @Override
     protected IItemViewModel newItemViewModel(DailyListBean.StoriesBean item) {
+        // TODO: 2017/2/15 要做新闻item
         return null;
     }
 
