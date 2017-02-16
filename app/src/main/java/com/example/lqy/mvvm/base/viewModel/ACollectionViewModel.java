@@ -22,6 +22,7 @@ import me.tatarka.bindingcollectionadapter.OnItemBind;
 import rx.Observable;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 /**
@@ -141,19 +142,19 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
     private void addStaticViewModel() {
         //添加header view model
         if (getHeaderViewCount() > 0) {
-            itemViewModels.add(0, headerViewBindingCreator.genItemViewModel(null));
+            IItemViewModel headerViewModel = headerViewBindingCreator.genItemViewModel(null);
+            itemViewModels.add(0, headerViewModel == null ? new StaticItemViewModel(StaticItemViewModel.TYPE_HEADER) : headerViewModel);
         }
 
         //添加footer view model
         if (getFooterViewCount() > 0) {
-            itemViewModels.add(footerViewBindingCreator.genItemViewModel(null));
+         IItemViewModel footerViewModel = footerViewBindingCreator.genItemViewModel(null);
+            itemViewModels.add(footerViewModel == null ? new StaticItemViewModel(StaticItemViewModel.TYPE_FOOTER) : footerViewModel);
         }
 
         //添加load more view model
-        int itemCount = itemViewModels.size() - (getHeaderViewCount() + getFooterViewCount());
-        if (getLoadMoreViewCount() > 0 && itemCount > 0) {
-            itemViewModels.add(loadMoreViewBindingCreator.genItemViewModel(null));
-        }
+        addLoadMoreViewModel();
+
         // TODO: 2017/2/10 添加empty view
     }
 
@@ -241,14 +242,18 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
             // TODO: 2017/2/13 设置loading界面 加载完成或加载更多
             getData()
                     .subscribeOn(Schedulers.io())
-                    .observeOn(Schedulers.newThread())
-                    .compose(composer)
-                    .flatMap(Observable::from)
-                    .map(ACollectionViewModel.this::newItemViewModel)
-                    .toList()
+                    .compose(this::convertResultToItemViewModels)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(this);
 
+        }
+
+        protected Observable<List<IItemViewModel>> convertResultToItemViewModels(Observable<Result> resultObservable) {
+            return resultObservable.observeOn(Schedulers.newThread())
+                    .compose(composer)
+                    .flatMap(Observable::from)
+                    .map(ACollectionViewModel.this::newItemViewModel)
+                    .toList();
         }
 
         @Override
@@ -259,22 +264,30 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
 
         @Override
         public void onCompleted() {
-            if (isLoadMoreEnable && isLoading) {
-                isLoading = false;
-                SimpleLoadMoreViewModel loadMoreViewModel = loadMoreViewBindingCreator.genItemViewModel();
+            SimpleLoadMoreViewModel loadMoreViewModel = getLoadMoreViewModel();
+            if (itemViewModels.isEmpty()) {
+                // TODO: 2017/2/15 设置empty view
+            } else{
+                if (loadMoreViewModel == null) {    //如果数据不为空且loadMoreViewModel为null则添加loadMoreViewModel
+                    loadMoreViewModel = addLoadMoreViewModel();
+                }
+                if (isLoadMoreEnable && isLoading) {
+                    isLoading = false;
 
-                if (isNextLoadEnable) {
-                    loadMoreViewModel.loadMore();
-                } else {
-                    loadMoreViewModel.noMore();
+                    if (loadMoreViewModel != null) {
+                        if (isNextLoadEnable) {
+                            loadMoreViewModel.loadMore();
+                        } else {
+                            loadMoreViewModel.noMore();
+                        }
+                    }
                 }
             }
+
             if (isRefreshEnable.get() && isRefreshing.get()) {
                 isRefreshing.set(false);
             }
-            if (itemViewModels.isEmpty()) {
-                // TODO: 2017/2/15 设置empty view
-            }
+
         }
 
         @Override
@@ -285,4 +298,28 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
         }
     }
 
+    private SimpleLoadMoreViewModel getLoadMoreViewModel() {
+        if (itemViewModels.size() == 0) {
+            return null;
+        }
+        IItemViewModel loadMoreViewModel = itemViewModels.get(itemViewModels.size() - 1);
+        if (loadMoreViewModel != null
+                && loadMoreViewModel.getItemViewType() == StaticItemViewModel.TYPE_LOAD_MORE) {
+            return (SimpleLoadMoreViewModel)loadMoreViewModel;
+        }
+        return null;
+    }
+
+    private SimpleLoadMoreViewModel addLoadMoreViewModel() {
+        int itemCount = itemViewModels.size() - (getHeaderViewCount() + getFooterViewCount());
+        if (getLoadMoreViewCount() > 0 && itemCount > 0) {
+            SimpleLoadMoreViewModel loadMoreViewModel = loadMoreViewBindingCreator.genItemViewModel(null);
+            if (loadMoreViewModel == null) {
+                return null;
+            }
+            itemViewModels.add(loadMoreViewModel);
+            return loadMoreViewModel;
+        }
+        return null;
+    }
 }

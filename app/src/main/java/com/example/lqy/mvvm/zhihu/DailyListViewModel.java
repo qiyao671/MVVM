@@ -2,6 +2,8 @@ package com.example.lqy.mvvm.zhihu;
 
 import android.content.Context;
 
+import com.example.lqy.mvvm.BR;
+import com.example.lqy.mvvm.R;
 import com.example.lqy.mvvm.base.other.ViewBindingRes;
 import com.example.lqy.mvvm.base.viewModel.ACollectionViewModel;
 import com.example.lqy.mvvm.base.viewModel.itemViewModel.IItemViewModel;
@@ -28,13 +30,13 @@ public class DailyListViewModel extends ACollectionViewModel<DailyListBean.Stori
 
     @Override
     protected ViewBindingRes getItemRes(int position, IItemViewModel item) {
-        return null;
+        return new ViewBindingRes(R.layout.item_one_img_news, BR.viewModel);
     }
 
     @Override
     protected IItemViewModel newItemViewModel(DailyListBean.StoriesBean item) {
         // TODO: 2017/2/15 要做新闻item
-        return null;
+        return new OneImgNewsViewModel(getContext(), item);
     }
 
     private class GetDailyListTask extends APagingTask<List<DailyListBean.StoriesBean>> {

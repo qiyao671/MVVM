@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:bind="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable
+            name="viewModel"
+            type="com.example.lqy.mvvm.zhihu.OneImgNewsViewModel" />
+    </data>
+    <LinearLayout
+        android:padding="12dp"
+        android:orientation="horizontal" android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:text="@{viewModel.title}"
+            android:textSize="18dp"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView" />
+
+        <ImageView
+            bind:imageUrl="@{viewModel.imageUrl}"
+            android:layout_marginLeft="5dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp" />
+    </LinearLayout>
+</layout>

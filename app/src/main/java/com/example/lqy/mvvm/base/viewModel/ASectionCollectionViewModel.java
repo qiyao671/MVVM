@@ -8,6 +8,16 @@ import com.example.lqy.mvvm.base.other.ViewBindingRes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
+
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.functions.Func1;
+import rx.functions.Func2;
+import rx.observables.GroupedObservable;
+import rx.schedulers.Schedulers;
 
 /**
  * Created by qiyao on 2017/2/3.
@@ -15,6 +25,7 @@ import java.util.HashMap;
 
 public abstract class ASectionCollectionViewModel<H, T> extends ACollectionViewModel<T> {
     private ViewBindingRes sectionHeaderRes;
+    HashMap<H, ArrayList<T>> sectionedItems = new HashMap<>();
 
     public ASectionCollectionViewModel(Context context,  ViewBindingRes sectionHeaderRes) {
         super(context);
@@ -63,18 +74,16 @@ public abstract class ASectionCollectionViewModel<H, T> extends ACollectionViewM
         return sectionedItems;
     }
 
-//    @Override
-//    protected ArrayList<IItemViewModel> generateItemViewModelList(ArrayList<T> items) {
-//        setupDataSource(items);
-//        ArrayList<IItemViewModel> itemViewModels = new ArrayList<>();
-//        for (int section = 0; section < numberOfSections(); section++) {
-//            itemViewModels.add(headerViewModelOfSection(section));
-//            for (int index = 0; index < numberOfItemsInSection(section); index++) {
-//                itemViewModels.add(itemViewModelAtIndexInSection(index, section));
-//            }
-//        }
-//        return itemViewModels;
-//    }
+    protected ArrayList<IItemViewModel> generateItemViewModelList() {
+        ArrayList<IItemViewModel> itemViewModels = new ArrayList<>();
+        for (int section = 0; section < numberOfSections(); section++) {
+            itemViewModels.add(headerViewModelOfSection(section));
+            for (int index = 0; index < numberOfItemsInSection(section); index++) {
+                itemViewModels.add(itemViewModelAtIndexInSection(index, section));
+            }
+        }
+        return itemViewModels;
+    }
 
     @Override
     protected ViewBindingRes getItemRes(int position, IItemViewModel item) {
@@ -84,4 +93,50 @@ public abstract class ASectionCollectionViewModel<H, T> extends ACollectionViewM
             return getItemRes(position, item);
         }
     }
+
+    abstract class test<Result> extends APagingTask<Result> {
+        public test(RefreshMode mode) {
+            super(mode);
+        }
+
+        @Override
+        public void execute() {
+            Observable<List<GroupedObservable<H, T>>> groups = getData()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.newThread())
+                    .compose(composer)
+                    .subscribe(new Subscriber<List<T>>() {
+                        @Override
+                        public void onCompleted() {
+
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+
+                        }
+
+                        @Override
+                        public void onNext(List<T> ts) {
+
+                        }
+                    })
+        }
+
+        @Override
+        protected Observable<Result> getData() {
+            return null;
+        }
+
+        @Override
+        protected Observable<List<T>> handleData(Observable<Result> upstream) {
+            return null;
+        }
+
+        protected int compareTo(GroupedObservable<H, T> go, GroupedObservable<H, T> go2 ) {
+            ASectionCollectionViewModel.this.compareTo(go.getKey(), go2.getKey());
+        }
+    }
+    public abstract int compareTo(H h, H h2);
+
 }
