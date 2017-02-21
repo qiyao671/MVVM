@@ -7,5 +7,5 @@ import com.example.lqy.mvvm.base.viewModel.IViewModel;
  */
 
 public interface IItemViewModel extends IViewModel {
-    int getItemViewType();
+    String getItemViewType();
 }

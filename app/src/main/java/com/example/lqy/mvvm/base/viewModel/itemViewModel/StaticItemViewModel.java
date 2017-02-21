@@ -7,18 +7,18 @@ package com.example.lqy.mvvm.base.viewModel.itemViewModel;
  */
 
 public class StaticItemViewModel implements IItemViewModel {
-    private int type;
-    public StaticItemViewModel(int type) {
+    private String type;
+    public StaticItemViewModel(String type) {
         this.type = type;
     }
 
-    public static final int TYPE_HEADER = 1000;
-    public static final int TYPE_FOOTER = 1001;
-    public static final int TYPE_LOAD_MORE = 1002;
-    public static final int TYPE_EMPTY = 1003;
+    public static final String TYPE_HEADER = "TYPE_HEADER";
+    public static final String TYPE_FOOTER = "TYPE_FOOTER";
+    public static final String TYPE_LOAD_MORE = "TYPE_LOAD_MORE";
+    public static final String TYPE_EMPTY = "TYPE_EMPTY";
 
     @Override
-    public int getItemViewType() {
+    public String getItemViewType() {
         return type;
     }
 }
