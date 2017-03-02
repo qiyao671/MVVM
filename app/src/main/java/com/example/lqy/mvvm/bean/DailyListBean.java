@@ -58,7 +58,7 @@ public class DailyListBean {
         private String title;
         private boolean multipic;
         private List<String> images;
-        public static final int TYPE_NEWS = 1;
+        public static final String TYPE_NEWS = "news";
 
         public int getType() {
             return type;

@@ -3,6 +3,7 @@ package com.example.lqy.mvvm.sectionedList;
 import android.content.Context;
 import android.databinding.ObservableField;
 
+import com.example.lqy.mvvm.base.viewModel.ASectionCollectionViewModel;
 import com.example.lqy.mvvm.base.viewModel.itemViewModel.IItemViewModel;
 
 /**
@@ -26,7 +27,7 @@ public class SectionHeaderViewModel implements IItemViewModel {
     }
 
     @Override
-    public int getItemViewType() {
-        return 0;
+    public String getItemViewType() {
+        return ASectionCollectionViewModel.TYPE_SECTION_HEADER;
     }
 }

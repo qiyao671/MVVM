@@ -4,10 +4,8 @@ import android.app.Fragment;
 
 import com.example.lqy.mvvm.base.other.ViewBindingRes;
 import com.example.lqy.mvvm.base.viewModel.ACollectionViewModel;
-import com.example.lqy.mvvm.bean.User;
 import com.example.lqy.mvvm.base.viewModel.itemViewModel.IItemViewModel;
-
-import java.util.ArrayList;
+import com.example.lqy.mvvm.bean.User;
 
 /**
  * Created by lvqiyao (amorfatilay@163.com).
@@ -32,7 +30,7 @@ public class ViewModel extends ACollectionViewModel<User> {
 
 
     public ViewModel(Fragment fragment) {
-        super(fragment.getActivity());
+        super(fragment);
         this.fragment = fragment;
 
     }

@@ -1,6 +1,6 @@
 package com.example.lqy.mvvm.base.viewModel;
 
-import android.content.Context;
+import android.app.Fragment;
 import android.databinding.ObservableArrayList;
 import android.databinding.ObservableBoolean;
 import android.databinding.ObservableField;
@@ -14,6 +14,7 @@ import com.example.lqy.mvvm.base.other.ViewBindingRes;
 import com.example.lqy.mvvm.base.viewModel.itemViewModel.IItemViewModel;
 import com.example.lqy.mvvm.base.viewModel.itemViewModel.SimpleLoadMoreViewModel;
 import com.example.lqy.mvvm.base.viewModel.itemViewModel.StaticItemViewModel;
+import com.trello.rxlifecycle.components.RxFragment;
 
 import java.util.List;
 
@@ -31,18 +32,18 @@ import rx.schedulers.Schedulers;
  */
 
 public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreListener, SwipeRefreshLayout.OnRefreshListener {
-    private Context context;
+    private Fragment fragment;
     private IItemViewBindingCreator<Object> headerViewBindingCreator;
     private IItemViewBindingCreator<Object> footerViewBindingCreator;
 
     //下拉刷新
     public final ObservableField<SwipeRefreshLayout.OnRefreshListener> onRefreshListener = new ObservableField<>();
     public final ObservableBoolean isRefreshing = new ObservableBoolean(false);
-    public final ObservableBoolean isRefreshEnable = new ObservableBoolean(false);
+    public final ObservableBoolean isRefreshEnable = new ObservableBoolean(true);
 
     //加载更多
     private boolean isNextLoadEnable = false;
-    private boolean isLoadMoreEnable = false;
+    private boolean isLoadMoreEnable = true;
     private boolean isLoading = false;
     public final ObservableField<OnLoadMoreListener> onLoadMoreListener = new ObservableField<>();
     private SimpleLoadMoreViewBindingCreator loadMoreViewBindingCreator;
@@ -53,8 +54,8 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
     //child viewModel
     public final ObservableArrayList<IItemViewModel> itemViewModels = new ObservableArrayList<>();
 
-    public ACollectionViewModel(Context context) {
-        this.context = context;
+    public ACollectionViewModel(Fragment fragment) {
+        this.fragment = fragment;
 
         headerViewBindingCreator = createHeaderViewBindingHelper();
         footerViewBindingCreator = createFooterViewBindingHelper();
@@ -64,6 +65,12 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
 
         onRefreshListener.set(this);
         onLoadMoreListener.set(this);
+    }
+
+    public ACollectionViewModel(Fragment fragment, boolean isRefreshEnable, boolean isLoadMoreEnable) {
+        this(fragment);
+        this.isRefreshEnable.set(isRefreshEnable);
+        this.isLoadMoreEnable = isLoadMoreEnable;
     }
 
     //刷新的回调
@@ -117,9 +124,8 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
         if (mode == RefreshMode.load_more) {
             addListAtFootOfItemViewModels(itemViewModelArrayList);
         } else if (mode == RefreshMode.reset) {
-            itemViewModels.clear();
+            clearItemViewModels();
             itemViewModels.addAll(itemViewModelArrayList);
-            addStaticViewModel();
         } else if (mode == RefreshMode.refresh) {
             addListAtHeadOfItemViewModels(itemViewModelArrayList);
         }
@@ -132,6 +138,11 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
     private void addListAtFootOfItemViewModels(List<IItemViewModel> itemViewModelArrayList) {
         int index = itemViewModels.size() - getFooterViewCount() - getLoadMoreViewCount();
         itemViewModels.addAll(index, itemViewModelArrayList);
+    }
+
+    protected void clearItemViewModels() {
+        itemViewModels.clear();
+        addStaticViewModel();
     }
 
     private void initItemViewModelList() {
@@ -176,7 +187,7 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
     }
 
     protected SimpleLoadMoreViewBindingCreator createLoadMoreViewBindingHelper() {
-        return new SimpleLoadMoreViewBindingCreator(context);
+        return new SimpleLoadMoreViewBindingCreator(fragment.getActivity());
     }
 
 //    protected abstract ArrayList<IItemViewModel> generateItemViewModelList(ArrayList<T> items);
@@ -205,10 +216,6 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
         return itemBinding;
     }
 
-    public Context getContext() {
-        return context;
-    }
-
     private int getHeaderViewCount() {
         return getHeaderRes() == null ? 0 : 1;
     }
@@ -221,6 +228,9 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
         return getLoadMoreViewRes() == null || loadMoreViewBindingCreator.genItemViewModel(null) == null ? 0 : 1;
     }
 
+    public Fragment getFragment() {
+        return fragment;
+    }
 
     private SimpleLoadMoreViewModel getLoadMoreViewModel() {
         if (itemViewModels.size() == 0) {
@@ -232,6 +242,46 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
             return (SimpleLoadMoreViewModel)loadMoreViewModel;
         }
         return null;
+    }
+
+    public boolean isRefreshing() {
+        return isRefreshing.get();
+    }
+
+    public void setRefreshing(boolean isRefreshing) {
+        this.isRefreshing.set(isRefreshing);
+    }
+
+    public boolean isRefreshEnable() {
+        return isRefreshEnable.get();
+    }
+
+    public void setRefreshEnable(boolean isRefreshEnable) {
+        this.isRefreshEnable.set(isRefreshEnable);
+    }
+
+    public boolean isNextLoadEnable() {
+        return isNextLoadEnable;
+    }
+
+    public void setNextLoadEnable(boolean nextLoadEnable) {
+        isNextLoadEnable = nextLoadEnable;
+    }
+
+    public boolean isLoadMoreEnable() {
+        return isLoadMoreEnable;
+    }
+
+    public void setLoadMoreEnable(boolean loadMoreEnable) {
+        isLoadMoreEnable = loadMoreEnable;
+    }
+
+    public boolean isLoading() {
+        return isLoading;
+    }
+
+    public void setLoading(boolean loading) {
+        isLoading = loading;
     }
 
     public enum RefreshMode {
@@ -249,31 +299,38 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
         refresh
     }
 
-    protected interface AListTask<T> extends Observer<List<IItemViewModel>>{
-
-        Observable<List<T>> getData();
-
-        void execute();
-    }
-
-    protected abstract class APagingTask implements AListTask<T> {
+    protected abstract class APagingTask implements Observer<List<IItemViewModel>> {
         protected RefreshMode mode;
 
         public APagingTask(RefreshMode mode) {
             this.mode = mode;
         }
 
+        protected abstract Observable<List<T>> getData(RefreshMode mode);
+
         public void execute() {
+            prepare(mode);
             // TODO: 2017/2/13 设置loading界面 加载完成或加载更多
-            getData()
+            executeTask(getData(mode));
+        }
+
+        protected void prepare(RefreshMode mode) {
+
+        }
+
+        protected void executeTask(Observable<List<T>> result) {
+            result
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.newThread())
                     .flatMap(Observable::from)
                     .map(ACollectionViewModel.this::newItemViewModel)
                     .toList()
+                    .compose(((RxFragment) fragment).bindToLifecycle())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(this);
         }
+
+        protected void handleNewItemViewModels(RefreshMode mode, List<IItemViewModel> newItemViewModels){}
 
         @Override
         public void onError(Throwable e) {
@@ -311,6 +368,7 @@ public abstract class ACollectionViewModel<T> implements IViewModel, OnLoadMoreL
 
         @Override
         public void onNext(List<IItemViewModel> iItemViewModels) {
+            handleNewItemViewModels(mode, iItemViewModels);
             if (!iItemViewModels.isEmpty()) {
                 addListToItemViewModels(mode, iItemViewModels);
             }

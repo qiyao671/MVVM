@@ -1,15 +1,17 @@
 package com.example.lqy.mvvm.base.viewModel;
 
-import android.content.Context;
+import android.app.Fragment;
 
 import com.example.lqy.mvvm.base.other.ViewBindingRes;
 import com.example.lqy.mvvm.base.viewModel.itemViewModel.IItemViewModel;
+import com.trello.rxlifecycle.components.RxFragment;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import rx.Observable;
-import rx.observables.GroupedObservable;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 /**
@@ -18,12 +20,14 @@ import rx.schedulers.Schedulers;
 
 public abstract class ASectionCollectionViewModel<H, T> extends ACollectionViewModel<T> {
     public static final String TYPE_SECTION_HEADER = "TYPE_SECTION_HEADER";
-    private ViewBindingRes sectionHeaderRes;
-    private HashMap<H, List<T>> sectionedItems = new HashMap<>();
+    private HashMap<H, List<T>> sectionedItems;
 
-    public ASectionCollectionViewModel(Context context,  ViewBindingRes sectionHeaderRes) {
-        super(context);
-        this.sectionHeaderRes = sectionHeaderRes;
+    public ASectionCollectionViewModel(Fragment fragment) {
+        super(fragment);
+    }
+
+    public ASectionCollectionViewModel(Fragment fragment, boolean isRefreshEnable, boolean isLoadMoreEnable) {
+        super(fragment, isRefreshEnable, isLoadMoreEnable);
     }
 
     protected abstract boolean isSectionHeader(int position, IItemViewModel itemViewModel);
@@ -35,10 +39,10 @@ public abstract class ASectionCollectionViewModel<H, T> extends ACollectionViewM
     protected abstract H headerForSectionOfItem(T item);
 
     //获得Section的数量
-    protected abstract int numberOfSections();
+//    protected abstract int numberOfSections();
 
     //获得某section中item的数量
-    protected abstract int numberOfItemsInSection(int section);
+//    protected abstract int numberOfItemsInSection(int section);
 //
 //    //获得某section中第index个item的ViewModel
 //    protected abstract IItemViewModel itemViewModelAtIndexInSection(int index, int section);
@@ -52,6 +56,9 @@ public abstract class ASectionCollectionViewModel<H, T> extends ACollectionViewM
     //设置item的layout和对应的binding variable
     protected abstract ViewBindingRes getSectionItemRes(int position, IItemViewModel item);
 
+    //设置sectionItem的layout和对应的binding variable
+    protected abstract ViewBindingRes getSectionHeaderRes(int position, IItemViewModel item);
+
     //创建sectionHeader的ItemViewModel
     protected abstract IItemViewModel newSectionHeaderItemViewModel(H header);
 
@@ -62,9 +69,9 @@ public abstract class ASectionCollectionViewModel<H, T> extends ACollectionViewM
     @Override
     protected ViewBindingRes getItemRes(int position, IItemViewModel item) {
         if (isSectionHeader(position, item)) {
-            return sectionHeaderRes;
+            return getSectionHeaderRes(position, item);
         } else {
-            return getItemRes(position, item);
+            return getSectionItemRes(position, item);
         }
     }
 
@@ -104,54 +111,59 @@ public abstract class ASectionCollectionViewModel<H, T> extends ACollectionViewM
      * 第二种情况：不可添加数据，请override updateItemViewModels函数
      */
     protected abstract class ASectionTask extends APagingTask {
-        private List<IItemViewModel> newItemViewModels;
+        private List<IItemViewModel> newItemViewModels = new ArrayList<>();
 
         public ASectionTask(RefreshMode mode) {
             super(mode);
         }
 
         @Override
-        public void execute() {
-            getData()
+        protected void executeTask(Observable<List<T>> result) {
+            result
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.newThread())
                     .flatMap(Observable::from)
                     .groupBy(ASectionCollectionViewModel.this::headerForSectionOfItem)
-                    .toSortedList(this::compareTo)
-                    .flatMap(Observable::from)
-                    .subscribe(this::addSectionItems, this::onError, this::onCompleted);
+                    .doOnNext(htGroupedObservable -> sectionedItems.put(htGroupedObservable.getKey(), new ArrayList<>()))
+                    .flatMap(htGroupedObservable -> htGroupedObservable.toSortedList(ASectionCollectionViewModel.this::compareToItems))
+                    .compose(((RxFragment) getFragment()).bindToLifecycle())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(this::addItemsToSectionedItems, super::onError, this::sectionedItemsToItemViewModels);
+        }
+
+        @Override
+        protected void prepare(RefreshMode mode) {
+            if (sectionedItems == null) {
+                sectionedItems = new HashMap<>();
+            }
         }
 
         @Override
         public void onCompleted() {
+            handleNewItemViewModels(mode, newItemViewModels);
             updateItemViewModels();
             super.onCompleted();
         }
 
+        private void addItemsToSectionedItems(List<T> ts) {
+            sectionedItems.get(headerForSectionOfItem(ts.get(0))).addAll(ts);
+        }
+
+        private void sectionedItemsToItemViewModels() {
+            Observable.just(sectionedItems)
+                    .flatMap(sectionedItems -> Observable.from(sectionedItems.keySet()))
+                    .toSortedList(ASectionCollectionViewModel.this::compareToHeaders)
+                    .flatMap(Observable::from)
+                    .subscribe(h -> {
+                        newItemViewModels.add(newSectionHeaderItemViewModel(h));
+                        Observable.from(sectionedItems.get(h))
+                                .map(ASectionCollectionViewModel.this::newItemViewModel)
+                                .subscribe(newItemViewModels::add);
+                    }, super::onError, this::onCompleted);
+        }
+
         protected void updateItemViewModels() {
             addListToItemViewModels(mode, newItemViewModels);
-        }
-
-        private int compareTo(GroupedObservable<H, T> go, GroupedObservable<H, T> go2 ) {
-            return ASectionCollectionViewModel.this.compareToHeaders(go.getKey(), go2.getKey());
-        }
-
-        private void addSectionItems(GroupedObservable<H, T> groupedObservable) {
-            H header = groupedObservable.getKey();
-            itemViewModels.add(newSectionHeaderItemViewModel(header));
-            groupedObservable.toSortedList(ASectionCollectionViewModel.this::compareToItems)
-                    .flatMap(ts -> {
-                        sectionedItems.put(header, ts);
-                        return Observable.from(ts);
-                    })
-                    .map(ASectionCollectionViewModel.this::newItemViewModel)
-                    .toList()
-                    .subscribe(iItemViewModels -> {
-                        if (newItemViewModels == null) {
-                            newItemViewModels = iItemViewModels;
-                        }
-                        newItemViewModels.addAll(iItemViewModels);
-                    }, this::onError);
         }
     }
 }

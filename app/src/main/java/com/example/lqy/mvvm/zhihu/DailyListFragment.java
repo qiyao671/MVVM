@@ -12,6 +12,6 @@ import com.example.lqy.mvvm.base.viewModel.ACollectionViewModel;
 public class DailyListFragment extends ARecyclerViewFragment {
     @Override
     protected ACollectionViewModel createViewModel() {
-        return new DailyListViewModel(getActivity());
+        return new DailyListViewModel(this);
     }
 }

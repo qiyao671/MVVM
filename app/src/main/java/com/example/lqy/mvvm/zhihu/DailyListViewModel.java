@@ -1,6 +1,6 @@
 package com.example.lqy.mvvm.zhihu;
 
-import android.content.Context;
+import android.app.Fragment;
 
 import com.example.lqy.mvvm.BR;
 import com.example.lqy.mvvm.R;
@@ -19,8 +19,8 @@ import rx.Observable;
  */
 
 public class DailyListViewModel extends ACollectionViewModel<DailyListBean.StoriesBean> {
-    public DailyListViewModel(Context context) {
-        super(context);
+    public DailyListViewModel(Fragment fragment) {
+        super(fragment);
     }
 
     @Override
@@ -36,23 +36,18 @@ public class DailyListViewModel extends ACollectionViewModel<DailyListBean.Stori
     @Override
     protected IItemViewModel newItemViewModel(DailyListBean.StoriesBean item) {
         // TODO: 2017/2/15 要做新闻item
-        return new OneImgNewsViewModel(getContext(), item);
+        return new OneImgNewsViewModel(getFragment().getActivity(), item);
     }
 
-    private class GetDailyListTask extends APagingTask<List<DailyListBean.StoriesBean>> {
+    private class GetDailyListTask extends APagingTask {
 
         public GetDailyListTask(RefreshMode mode) {
             super(mode);
         }
 
         @Override
-        protected Observable<List<DailyListBean.StoriesBean>> getData() {
+        protected Observable<List<DailyListBean.StoriesBean>> getData(RefreshMode mode) {
             return HttpMethods.getInstance().getDailyList();
-        }
-
-        @Override
-        protected Observable<List<DailyListBean.StoriesBean>> handleData(Observable<List<DailyListBean.StoriesBean>> upstream) {
-            return upstream;
         }
     }
 

@@ -41,7 +41,7 @@ public class SimpleLoadMoreViewModel implements IItemViewModel {
     }
 
     @Override
-    public int getItemViewType() {
+    public String getItemViewType() {
         return StaticItemViewModel.TYPE_LOAD_MORE;
     }
 }

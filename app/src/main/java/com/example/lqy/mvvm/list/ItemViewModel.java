@@ -15,6 +15,7 @@ import com.example.lqy.mvvm.bean.User;
 
 public class ItemViewModel implements IItemViewModel {
     private Context context;
+    public static final String TYPE_USER = "user";
 
     private User user;
 
@@ -34,7 +35,7 @@ public class ItemViewModel implements IItemViewModel {
     }
 
     @Override
-    public int getItemViewType() {
-        return 0;
+    public String getItemViewType() {
+        return TYPE_USER;
     }
 }

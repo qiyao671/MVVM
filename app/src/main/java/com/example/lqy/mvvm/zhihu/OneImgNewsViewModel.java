@@ -1,13 +1,10 @@
 package com.example.lqy.mvvm.zhihu;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.databinding.ObservableField;
 
 import com.example.lqy.mvvm.base.viewModel.itemViewModel.IItemViewModel;
 import com.example.lqy.mvvm.bean.DailyListBean;
-
-import rx.Observable;
 
 /**
  * Created by qiyao on 2017/2/16.
@@ -29,7 +26,7 @@ public class OneImgNewsViewModel implements IItemViewModel {
     }
 
     @Override
-    public int getItemViewType() {
+    public String getItemViewType() {
         return DailyListBean.StoriesBean.TYPE_NEWS;
     }
 }
